@@ -1,0 +1,16 @@
+{
+  "name": "hyperframes-goodss",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Stage 1 HyperFrames character style showcase pipeline",
+  "scripts": {
+    "extract": "node scripts/extract-looks.mjs",
+    "generate": "node scripts/generate-compositions.mjs",
+    "qa:long": "node scripts/qa-video.mjs renders/style-showcase-long-fixed.mp4 1920 1080",
+    "qa:short": "node scripts/qa-video.mjs renders/style-showcase-short-fixed.mp4 1080 1920"
+  },
+  "dependencies": {
+    "gsap": "3.14.2"
+  }
+}
