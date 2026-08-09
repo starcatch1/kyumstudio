@@ -1,0 +1,14 @@
+[
+  {"id":1,"name":"기본 캐주얼","headline":"CLEAN DAILY","description":"화이트 나시와 핫팬츠로 만든 가장 기본적인 데일리 룩","tags":["데일리","클린","베이직"],"image":"assets/looks/look-01.png"},
+  {"id":2,"name":"홈웨어 / 휴식복","headline":"SOFT HOME","description":"오버핏 티셔츠와 스웨트 팬츠의 편안한 홈 스타일","tags":["편안함","휴식","내추럴"],"image":"assets/looks/look-02.png"},
+  {"id":3,"name":"러닝 / 운동복","headline":"ACTIVE MODE","description":"스포츠 브라탑과 러닝 쇼츠의 활동적인 스포츠 스타일","tags":["러닝","에너지","스포티"],"image":"assets/looks/look-03.png"},
+  {"id":4,"name":"스트리트 캐주얼","headline":"STREET EDGE","description":"그래픽 티셔츠와 카고 팬츠로 완성한 트렌디한 스트리트 룩","tags":["스트릿","힙","데일리"],"image":"assets/looks/look-04.png"},
+  {"id":5,"name":"오피스 / 커리어우먼","headline":"OFFICE CHIC","description":"블라우스와 슬랙스로 정돈한 세련된 오피스 스타일","tags":["오피스","커리어","시크"],"image":"assets/looks/look-05.png"},
+  {"id":6,"name":"정장 / 비즈니스 포멀","headline":"BUSINESS FORMAL","description":"블레이저와 슬랙스로 만든 전문적인 비즈니스 스타일","tags":["포멀","프로페셔널","정장"],"image":"assets/looks/look-06.png"},
+  {"id":7,"name":"아이돌 연습복","headline":"PRACTICE DAY","description":"연습실에서 편하게 움직일 수 있는 기능적인 연습복","tags":["연습","댄스","컴포트"],"image":"assets/looks/look-07.png"},
+  {"id":8,"name":"아이돌 무대복","headline":"STAGE LIGHT","description":"퍼포먼스와 조명 아래에서 시선을 끄는 화려한 무대 스타일","tags":["무대","퍼포먼스","글램"],"image":"assets/looks/look-08.png"},
+  {"id":9,"name":"럭셔리 행사복","headline":"LUXE EVENT","description":"행사와 파티를 위한 우아하고 고급스러운 드레스 스타일","tags":["럭셔리","행사","엘레강스"],"image":"assets/looks/look-09.png"},
+  {"id":10,"name":"로맨틱 데이트룩","headline":"ROMANTIC DAY","description":"가디건과 플리츠 스커트로 만든 사랑스러운 데이트 스타일","tags":["러블리","데이트","로맨틱"],"image":"assets/looks/look-10.png"},
+  {"id":11,"name":"여행 / 리조트룩","headline":"RESORT ESCAPE","description":"나시 탑과 린넨 팬츠로 만든 가볍고 여유로운 여행 스타일","tags":["리조트","여행","서머"],"image":"assets/looks/look-11.png"},
+  {"id":12,"name":"콘셉트 / 판타지 의상","headline":"FANTASY MODE","description":"캐릭터의 세계관과 이야기를 강조하는 콘셉트 의상","tags":["판타지","콘셉트","캐릭터"],"image":"assets/looks/look-12.png"}
+]
