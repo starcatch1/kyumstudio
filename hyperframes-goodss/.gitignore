@@ -1,0 +1,8 @@
+node_modules/
+vendor/
+renders/*.mp4
+renders/*.json
+assets/looks/*.png
+assets/source/character-master-sheet.png
+index.html
+package-lock.json
