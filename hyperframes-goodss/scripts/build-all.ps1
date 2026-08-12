@@ -97,9 +97,9 @@ else {
 }
 
 Write-Host "`n=== 7/8 Browser-compatible H.264/AAC encode ===" -ForegroundColor Cyan
-& powershell -ExecutionPolicy Bypass -File .\scripts\compat-encode.ps1 -InputFile $LongRaw -OutputFile .\renders\style-showcase-long-fixed.mp4 -Width 1920 -Height 1080
+& .\scripts\compat-encode.ps1 -InputFile $LongRaw -OutputFile .\renders\style-showcase-long-fixed.mp4 -Width 1920 -Height 1080
 Assert-Exit 'Long compatibility encode'
-& powershell -ExecutionPolicy Bypass -File .\scripts\compat-encode.ps1 -InputFile $ShortRaw -OutputFile .\renders\style-showcase-short-fixed.mp4 -Width 1080 -Height 1920
+& .\scripts\compat-encode.ps1 -InputFile $ShortRaw -OutputFile .\renders\style-showcase-short-fixed.mp4 -Width 1080 -Height 1920
 Assert-Exit 'Short compatibility encode'
 
 Write-Host "`n=== 8/8 Final codec + full decode QA ===" -ForegroundColor Cyan
