@@ -71,7 +71,10 @@ hyperframes-goodss/
 │  ├─ compat-encode.ps1
 │  ├─ qa-video.mjs
 │  └─ build-all.ps1
+├─ run-stage1.ps1                         # 실제 입력 acceptance runner
+├─ run-stage1.cmd                         # Windows drag-and-drop launcher
 ├─ DESIGN.md
+├─ STATUS.md
 ├─ index.html                             # 생성 중간 Long composition
 └─ package.json
 ```
@@ -94,7 +97,33 @@ fallback은 공식 HyperFrames를 대체하는 최종 제품 기능이 아니라
 - Chrome 또는 Edge
 - HyperFrames CLI는 권장(사용 가능할 때 자동 우선)
 
-## 빠른 실행
+## 가장 쉬운 실제 마스터 시트 테스트
+
+Windows에서는 `run-stage1.cmd`에 마스터 시트 이미지를 **드래그 앤 드롭**합니다.
+
+실행기는 자동으로 다음 작업을 수행합니다.
+
+```text
+input image
+→ assets/source/character-master-sheet.png 준비
+→ 환경 설정
+→ 전체 Stage 1 build
+→ Long / Short QA 확인
+→ Windows 기본 플레이어로 두 MP4 열기
+```
+
+직접 PowerShell로 실행하려면:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-stage1.ps1 `
+  -MasterSheet "C:\경로\master-sheet.png" `
+  -Quality draft `
+  -Renderer auto
+```
+
+이미 setup을 끝낸 PC에서는 `-SkipSetup`을 추가할 수 있습니다.
+
+## 수동 빠른 실행
 
 1. 실제 캐릭터 마스터 시트를 저장합니다.
 
