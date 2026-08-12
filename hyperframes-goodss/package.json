@@ -1,16 +1,19 @@
 {
   "name": "hyperframes-goodss",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Stage 1 HyperFrames character style showcase pipeline",
   "scripts": {
     "extract": "node scripts/extract-looks.mjs",
     "generate": "node scripts/generate-compositions.mjs",
-    "qa:long": "node scripts/qa-video.mjs renders/style-showcase-long-fixed.mp4 1920 1080",
-    "qa:short": "node scripts/qa-video.mjs renders/style-showcase-short-fixed.mp4 1080 1920"
+    "render:fallback:long": "node scripts/render-fallback.mjs projects/long/index.html style-long 30 1920 1080 renders/style-showcase-long-raw.mp4",
+    "render:fallback:short": "node scripts/render-fallback.mjs projects/short/index.html style-short 17 1080 1920 renders/style-showcase-short-raw.mp4",
+    "qa:long": "node scripts/qa-video.mjs renders/style-showcase-long-fixed.mp4 1920 1080 renders/qa-long.json",
+    "qa:short": "node scripts/qa-video.mjs renders/style-showcase-short-fixed.mp4 1080 1920 renders/qa-short.json"
   },
   "dependencies": {
-    "gsap": "3.14.2"
+    "gsap": "3.14.2",
+    "playwright-core": "1.55.0"
   }
 }
