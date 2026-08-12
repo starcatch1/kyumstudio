@@ -1,84 +1,112 @@
 param(
   [ValidateSet('draft','standard','high')]
-  [string]$Quality = 'draft'
+  [string]$Quality = 'draft',
+  [ValidateSet('auto','hyperframes','fallback')]
+  [string]$Renderer = 'auto'
 )
 
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 Set-Location $Root
 
+function Assert-Exit([string]$Name) {
+  if ($LASTEXITCODE -ne 0) { throw "[P0] Step failed: $Name (exit $LASTEXITCODE)" }
+}
 function Run-Step([string]$Name, [scriptblock]$Action) {
   Write-Host "`n=== $Name ===" -ForegroundColor Cyan
   & $Action
-  if ($LASTEXITCODE -ne 0) { throw "[P0] Step failed: $Name (exit $LASTEXITCODE)" }
+  Assert-Exit $Name
 }
 
 $Source = Join-Path $Root 'assets\source\character-master-sheet.png'
-if (-not (Test-Path $Source)) {
-  throw '[P0] Missing assets\source\character-master-sheet.png'
-}
-if (-not (Test-Path (Join-Path $Root 'vendor\gsap.min.js'))) {
-  throw '[P0] vendor\gsap.min.js missing. Run scripts\setup.ps1 first.'
-}
-
+if (-not (Test-Path $Source)) { throw '[P0] Missing assets\source\character-master-sheet.png' }
+if (-not (Test-Path (Join-Path $Root 'vendor\gsap.min.js'))) { throw '[P0] vendor\gsap.min.js missing. Run scripts\setup.ps1 first.' }
 New-Item -ItemType Directory -Force -Path (Join-Path $Root 'renders') | Out-Null
 
 Run-Step '1/8 Extract 12 look assets' { & node .\scripts\extract-looks.mjs }
-Run-Step '2/8 Generate HyperFrames compositions' { & node .\scripts\generate-compositions.mjs }
-Run-Step '3/8 HyperFrames lint' { & npx --yes hyperframes lint --verbose }
+Run-Step '2/8 Generate compositions' { & node .\scripts\generate-compositions.mjs }
+Run-Step '3/8 Prepare independent Long / Short projects' { & node .\scripts\prepare-projects.mjs }
+Run-Step '4/8 Validate generated projects' { & node .\scripts\validate-projects.mjs }
 
-Write-Host "`n=== 4/8 HyperFrames inspect: long ===" -ForegroundColor Cyan
-$inspectLong = & npx --yes hyperframes inspect --json --samples 12 2>&1
-$inspectCode = $LASTEXITCODE
-$inspectLong | Set-Content -Encoding utf8 .\renders\inspect-long.json
-if ($inspectCode -ne 0) { throw "[P0] Long inspect failed (exit $inspectCode)." }
-
-Run-Step '5/8 Render long' {
-  & npx --yes hyperframes render --output renders/style-showcase-long-raw.mp4 --fps 30 --quality $Quality --strict
+$UseHyperFrames = $false
+if ($Renderer -eq 'hyperframes') {
+  Write-Host "`n=== Renderer probe: HyperFrames required ===" -ForegroundColor Cyan
+  & npx --yes hyperframes info
+  Assert-Exit 'HyperFrames CLI probe'
+  $UseHyperFrames = $true
+}
+elif ($Renderer -eq 'fallback') {
+  $UseHyperFrames = $false
+}
+else {
+  Write-Host "`n=== Renderer probe: HyperFrames preferred ===" -ForegroundColor Cyan
+  & npx --yes hyperframes info *> $null
+  if ($LASTEXITCODE -eq 0) {
+    $UseHyperFrames = $true
+    Write-Host '[P0] HyperFrames CLI found. Using official renderer.' -ForegroundColor Green
+  } else {
+    $UseHyperFrames = $false
+    Write-Warning '[P0] HyperFrames CLI unavailable. Using deterministic Chromium fallback renderer.'
+  }
 }
 
-# Render the short composition as root without permanently changing the long source.
-$IndexPath = Join-Path $Root 'index.html'
-$ShortPath = Join-Path $Root 'compositions\style-short.html'
-$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-$LongIndex = [System.IO.File]::ReadAllText($IndexPath)
-try {
-  $ShortIndex = [System.IO.File]::ReadAllText($ShortPath).Replace('../vendor/','vendor/')
-  [System.IO.File]::WriteAllText($IndexPath, $ShortIndex, $Utf8NoBom)
+$LongRaw = Join-Path $Root 'renders\style-showcase-long-raw.mp4'
+$ShortRaw = Join-Path $Root 'renders\style-showcase-short-raw.mp4'
+$InspectLong = Join-Path $Root 'renders\inspect-long.json'
+$InspectShort = Join-Path $Root 'renders\inspect-short.json'
 
-  Write-Host "`n=== 6/8 HyperFrames inspect + render: short ===" -ForegroundColor Cyan
-  $inspectShort = & npx --yes hyperframes inspect --json --samples 12 2>&1
-  $inspectShortCode = $LASTEXITCODE
-  $inspectShort | Set-Content -Encoding utf8 .\renders\inspect-short.json
-  if ($inspectShortCode -ne 0) { throw "[P0] Short inspect failed (exit $inspectShortCode)." }
+if ($UseHyperFrames) {
+  Write-Host "`n=== 5/8 HyperFrames lint / inspect / render: Long ===" -ForegroundColor Cyan
+  Push-Location (Join-Path $Root 'projects\long')
+  try {
+    & npx --yes hyperframes lint --verbose
+    Assert-Exit 'Long lint'
+    $inspect = & npx --yes hyperframes inspect --json --samples 12 2>&1
+    $code = $LASTEXITCODE
+    $inspect | Set-Content -Encoding utf8 $InspectLong
+    if ($code -ne 0) { throw "[P0] Long inspect failed (exit $code)." }
+    & npx --yes hyperframes render --output $LongRaw --fps 30 --quality $Quality --strict
+    Assert-Exit 'Long render'
+  } finally { Pop-Location }
 
-  & npx --yes hyperframes render --output renders/style-showcase-short-raw.mp4 --fps 30 --quality $Quality --strict
-  if ($LASTEXITCODE -ne 0) { throw '[P0] Short render failed.' }
+  Write-Host "`n=== 6/8 HyperFrames lint / inspect / render: Short ===" -ForegroundColor Cyan
+  Push-Location (Join-Path $Root 'projects\short')
+  try {
+    & npx --yes hyperframes lint --verbose
+    Assert-Exit 'Short lint'
+    $inspect = & npx --yes hyperframes inspect --json --samples 12 2>&1
+    $code = $LASTEXITCODE
+    $inspect | Set-Content -Encoding utf8 $InspectShort
+    if ($code -ne 0) { throw "[P0] Short inspect failed (exit $code)." }
+    & npx --yes hyperframes render --output $ShortRaw --fps 30 --quality $Quality --strict
+    Assert-Exit 'Short render'
+  } finally { Pop-Location }
+} else {
+  Run-Step '5/8 Fallback Chromium render: Long' {
+    & node .\scripts\render-fallback.mjs projects/long/index.html style-long 30 1920 1080 renders/style-showcase-long-raw.mp4
+  }
+  Run-Step '6/8 Fallback Chromium render: Short' {
+    & node .\scripts\render-fallback.mjs projects/short/index.html style-short 17 1080 1920 renders/style-showcase-short-raw.mp4
+  }
+  '{"renderer":"fallback","layoutInspect":"manual-required"}' | Set-Content -Encoding utf8 $InspectLong
+  '{"renderer":"fallback","layoutInspect":"manual-required"}' | Set-Content -Encoding utf8 $InspectShort
 }
-finally {
-  [System.IO.File]::WriteAllText($IndexPath, $LongIndex, $Utf8NoBom)
-}
 
-Write-Host "`n=== 7/8 Compatibility encode ===" -ForegroundColor Cyan
-& powershell -ExecutionPolicy Bypass -File .\scripts\compat-encode.ps1 `
-  -InputFile .\renders\style-showcase-long-raw.mp4 `
-  -OutputFile .\renders\style-showcase-long-fixed.mp4 `
-  -Width 1920 -Height 1080
-if ($LASTEXITCODE -ne 0) { throw '[P0] Long compatibility encode failed.' }
+Write-Host "`n=== 7/8 Browser-compatible H.264/AAC encode ===" -ForegroundColor Cyan
+& powershell -ExecutionPolicy Bypass -File .\scripts\compat-encode.ps1 -InputFile $LongRaw -OutputFile .\renders\style-showcase-long-fixed.mp4 -Width 1920 -Height 1080
+Assert-Exit 'Long compatibility encode'
+& powershell -ExecutionPolicy Bypass -File .\scripts\compat-encode.ps1 -InputFile $ShortRaw -OutputFile .\renders\style-showcase-short-fixed.mp4 -Width 1080 -Height 1920
+Assert-Exit 'Short compatibility encode'
 
-& powershell -ExecutionPolicy Bypass -File .\scripts\compat-encode.ps1 `
-  -InputFile .\renders\style-showcase-short-raw.mp4 `
-  -OutputFile .\renders\style-showcase-short-fixed.mp4 `
-  -Width 1080 -Height 1920
-if ($LASTEXITCODE -ne 0) { throw '[P0] Short compatibility encode failed.' }
-
-Write-Host "`n=== 8/8 Final decode / compatibility QA ===" -ForegroundColor Cyan
+Write-Host "`n=== 8/8 Final codec + full decode QA ===" -ForegroundColor Cyan
 & node .\scripts\qa-video.mjs .\renders\style-showcase-long-fixed.mp4 1920 1080 .\renders\qa-long.json
-if ($LASTEXITCODE -ne 0) { throw '[P0] Long QA failed.' }
+Assert-Exit 'Long QA'
 & node .\scripts\qa-video.mjs .\renders\style-showcase-short-fixed.mp4 1080 1920 .\renders\qa-short.json
-if ($LASTEXITCODE -ne 0) { throw '[P0] Short QA failed.' }
+Assert-Exit 'Short QA'
 
-Write-Host "`n[P0] STAGE 1 SAMPLE BUILD PASSED" -ForegroundColor Green
+Write-Host "`n[P0] STAGE 1 AUTOMATED BUILD PASSED" -ForegroundColor Green
+Write-Host "Renderer: $(if ($UseHyperFrames) {'HyperFrames'} else {'Fallback Chromium'})"
 Write-Host 'Long : renders\style-showcase-long-fixed.mp4'
 Write-Host 'Short: renders\style-showcase-short-fixed.mp4'
-Write-Host 'QA   : renders\qa-long.json / qa-short.json'
+Write-Host 'QA   : renders\qa-long.json / renders\qa-short.json'
+Write-Host '[P0] Remaining completion gate: human playback / visual review.'
