@@ -62,8 +62,8 @@ jobs:
       - name: Run Stage 1 fallback build
         shell: pwsh
         env:
-          HF_CAPTURE_FPS: '10'
-          HF_CAPTURE_SCALE: '0.4'
+          HF_CAPTURE_FPS: '5'
+          HF_CAPTURE_SCALE: '0.3'
         run: ./scripts/build-all.ps1 -Quality draft -Renderer fallback
 
       - name: Print QA reports
