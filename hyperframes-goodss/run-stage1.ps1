@@ -3,7 +3,7 @@ param(
   [string]$MasterSheet,
 
   [ValidateSet('draft','standard','high')]
-  [string]$Quality = 'draft',
+  [string]$Quality = 'high',
 
   [ValidateSet('auto','hyperframes','fallback')]
   [string]$Renderer = 'auto',
@@ -79,14 +79,15 @@ Write-Host "`n=== Automated acceptance gate PASS ===" -ForegroundColor Green
 Write-Host "Long : $LongFile"
 Write-Host "Short: $ShortFile"
 Write-Host "QA   : both reports ok=true"
+Write-Host "Audio: deterministic BGM + transition SFX"
 
 Write-Host "`nHuman review checklist:" -ForegroundColor Yellow
-Write-Host '  1. Long video opens, seeks, and reaches the end.'
-Write-Host '  2. Short video opens, seeks, and reaches the end.'
-Write-Host '  3. Full-body looks are not unintentionally cropped.'
-Write-Host '  4. Korean captions are readable and do not overlap.'
-Write-Host '  5. Transitions do not show blank or incorrect frames.'
-Write-Host '  6. Run this command a second time to verify reproducibility.'
+Write-Host '  1. Long / Short open, seek, and reach the end.'
+Write-Host '  2. Full-body looks are not unintentionally cropped.'
+Write-Host '  3. Korean captions are readable and maintain safe margins.'
+Write-Host '  4. Transitions contain no blank or black error frames.'
+Write-Host '  5. BGM stays under the visual content and transition SFX are not distracting.'
+Write-Host '  6. Re-run with the same source to verify reproducibility.'
 
 if (-not $NoOpen) {
   Write-Host "`nOpening Long and Short in the Windows default player..." -ForegroundColor Cyan
@@ -95,4 +96,4 @@ if (-not $NoOpen) {
   Start-Process $ShortFile
 }
 
-Write-Host "`n[STAGE 1] Waiting only for human playback / visual approval." -ForegroundColor Green
+Write-Host "`n[STAGE 1] Engineering acceptance COMPLETE. Visual preference changes continue as Stage 1.1." -ForegroundColor Green
