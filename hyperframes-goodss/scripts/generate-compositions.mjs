@@ -57,6 +57,7 @@ function commonStyle(width, height) {
   .chapter{display:inline-flex;align-items:center;justify-content:center;width:92px;height:92px;background:#C8FF3D;color:#111;font-size:42px;font-weight:900;border-radius:50%;line-height:1}
   .eyebrow{font-size:25px;font-weight:800;letter-spacing:.11em;text-transform:uppercase}
   h1,h2,p{margin:0} h1{font-size:104px;line-height:.98;letter-spacing:-.055em;font-weight:900} h2{font-size:68px;line-height:1.05;letter-spacing:-.045em;font-weight:900;word-break:keep-all}
+  .title-line{display:block}
   p{font-size:30px;line-height:1.45;color:#4A4A4A;word-break:keep-all}
   .tags{display:flex;gap:12px;flex-wrap:wrap}.tag{padding:10px 16px;border:2px solid #111;border-radius:999px;font-size:22px;font-weight:700;background:#fff}
   .transition{position:absolute;inset:0;z-index:50;overflow:hidden;pointer-events:none}.transition .wipe{position:absolute;inset:0;background:#C8FF3D}.transition.black .wipe{background:#111}.transition.split .wipe{background:#fff;border-left:16px solid #C8FF3D;border-right:16px solid #C8FF3D}
@@ -66,7 +67,7 @@ function commonStyle(width, height) {
 
 function longHtml() {
   const duration = 30;
-  let clips = `<div id="intro" class="scene intro" data-start="0" data-duration="3" data-track-index="1"><div class="scene-content intro-content"><div class="intro-kicker">CHARACTER STYLE SYSTEM · STAGE 1</div><h1>이서영<br>헤어 & 스타일 가이드</h1><div class="intro-accent">8 LOOKS · LONG SHOWCASE</div><p>한 캐릭터의 다양한 스타일을 전신 이미지와 에디토리얼 자막으로 소개합니다.</p></div></div>`;
+  let clips = `<div id="intro" class="scene intro" data-start="0" data-duration="3" data-track-index="1"><div class="scene-content intro-content"><div class="intro-kicker">CHARACTER STYLE SYSTEM · STAGE 1</div><h1><span class="title-line">이서영</span><span class="title-line">헤어 & 스타일 가이드</span></h1><div class="intro-accent">8 LOOKS · LONG SHOWCASE</div><p>한 캐릭터의 다양한 스타일을 전신 이미지와 에디토리얼 자막으로 소개합니다.</p></div></div>`;
   longLooks.forEach((look,i) => { clips += longLookScene(look, i+1, (i+1)*3); });
   clips += `<div id="ending" class="scene ending" data-start="27" data-duration="3" data-track-index="1"><div class="scene-content ending-content"><div class="intro-kicker">ENDING</div><h2>어떤 룩이 가장 마음에 드나요?</h2><p>Stage 1에서는 재생 안정성과 반복 생성 가능성을 먼저 검증합니다.</p><div class="ending-grid">${[1,3,5,10].map(id=>`<img src="${byId.get(id).image}" alt="look ${id}">`).join('')}</div></div></div>`;
   for (let i=1;i<10;i++) clips += transitionClip(i, i*3-0.30, i%3);
@@ -84,9 +85,9 @@ function longHtml() {
 
 function shortHtml() {
   const duration = 17;
-  let clips = `<div id="intro" class="scene intro" data-start="0" data-duration="2.5" data-track-index="1"><div class="scene-content intro-content"><div class="intro-kicker">15 SEC STYLE TEST</div><h1>한 캐릭터,<br>다양한 무드</h1><div class="intro-accent">STYLE SHIFT</div><p>출근 · 운동 · 데이트 · 스트릿</p></div></div>`;
+  let clips = `<div id="intro" class="scene intro" data-start="0" data-duration="2.5" data-track-index="1"><div class="scene-content intro-content"><div class="intro-kicker">15 SEC STYLE TEST</div><h1><span class="title-line">한 캐릭터,</span><span class="title-line">다양한 무드</span></h1><div class="intro-accent">STYLE SHIFT</div><p>출근 · 운동 · 데이트 · 스트릿</p></div></div>`;
   let cursor=2.5; shortLooks.forEach((look,i)=>{clips += shortLookScene(look,i+1,cursor);cursor+=3;});
-  clips += `<div id="ending" class="scene ending" data-start="14.5" data-duration="2.5" data-track-index="1"><div class="scene-content ending-content"><div class="intro-kicker">YOUR PICK?</div><h2>어떤 룩이<br>가장 마음에 드나요?</h2><div class="ending-grid">${shortLooks.map(x=>`<img src="${x.image}" alt="${esc(x.name)}">`).join('')}</div></div></div>`;
+  clips += `<div id="ending" class="scene ending" data-start="14.5" data-duration="2.5" data-track-index="1"><div class="scene-content ending-content"><div class="intro-kicker">YOUR PICK?</div><h2><span class="title-line">어떤 룩이</span><span class="title-line">가장 마음에 드나요?</span></h2><div class="ending-grid">${shortLooks.map(x=>`<img src="${x.image}" alt="${esc(x.name)}">`).join('')}</div></div></div>`;
   const boundaries=[2.5,5.5,8.5,11.5,14.5]; boundaries.forEach((b,i)=>clips+=transitionClip(i+1,b-.30,(i+1)%3));
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Style showcase short</title><style>${commonStyle(1080,1920)}
   h1{font-size:112px}h2{font-size:78px}.intro-content,.ending-content{padding:110px 72px}.short-layout{padding:72px 58px;display:flex;flex-direction:column;gap:22px}.short-image{height:67%;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #D9D9D9;border-radius:30px;overflow:hidden}.short-image img{width:100%;height:100%;object-fit:contain}.short-caption{height:33%;display:flex;flex-direction:column;justify-content:center;gap:14px;position:relative}.short-caption .chapter{width:72px;height:72px;font-size:32px}.short-caption .eyebrow{font-size:21px}.short-caption h2{font-size:54px}.short-caption p{font-size:25px;line-height:1.34}.short-caption .tag{font-size:18px;padding:7px 12px}.caption-b .short-caption{border-left:12px solid #C8FF3D;padding-left:24px}.caption-c .short-caption h2{background:#111;color:#fff;width:max-content;max-width:100%;padding:10px 16px;border-radius:10px}.caption-d .short-caption .eyebrow{writing-mode:vertical-rl;position:absolute;right:0;top:18px}.ending-grid{grid-template-columns:repeat(2,1fr);gap:12px}.ending-grid img{height:330px}
