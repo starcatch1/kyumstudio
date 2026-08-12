@@ -4,8 +4,8 @@ cd /d "%~dp0"
 
 if "%~1"=="" (
   echo.
-  echo hyperframes-goodss Stage 1 acceptance test
-  echo ------------------------------------------
+  echo hyperframes-goodss Stage 1 high-quality acceptance
+  echo -------------------------------------------------
   echo Drag a master-sheet image onto this CMD file,
   echo or paste the full image path below.
   echo.
@@ -22,9 +22,9 @@ if not defined MASTER (
 
 where pwsh >nul 2>nul
 if %errorlevel%==0 (
-  pwsh -NoProfile -ExecutionPolicy Bypass -File "%~dp0run-stage1.ps1" -MasterSheet "%MASTER%" -Quality draft -Renderer auto
+  pwsh -NoProfile -ExecutionPolicy Bypass -File "%~dp0run-stage1.ps1" -MasterSheet "%MASTER%" -Quality high -Renderer auto
 ) else (
-  powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0run-stage1.ps1" -MasterSheet "%MASTER%" -Quality draft -Renderer auto
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0run-stage1.ps1" -MasterSheet "%MASTER%" -Quality high -Renderer auto
 )
 
 set EXITCODE=%errorlevel%
@@ -32,8 +32,8 @@ echo.
 if not "%EXITCODE%"=="0" (
   echo [FAILED] Stage 1 acceptance test failed. Exit code: %EXITCODE%
 ) else (
-  echo [DONE] Automated Stage 1 acceptance test passed.
-  echo Review the two opened videos before marking Stage 1 complete.
+  echo [DONE] Stage 1 high-quality acceptance passed.
+  echo Long and Short include deterministic BGM and transition SFX.
 )
 pause
 exit /b %EXITCODE%
