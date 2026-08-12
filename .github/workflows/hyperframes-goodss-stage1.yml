@@ -26,6 +26,12 @@ jobs:
           cache: 'npm'
           cache-dependency-path: hyperframes-goodss/package.json
 
+      - name: Install FFmpeg
+        shell: bash
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg
+
       - name: Verify tools
         run: |
           node --version
