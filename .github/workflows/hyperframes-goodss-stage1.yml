@@ -52,19 +52,18 @@ jobs:
       - name: Generate CI master-sheet fixture
         shell: bash
         run: |
-          mkdir -p assets/source
           ffmpeg -y -v error \
             -f lavfi -i "color=c=0xf5f3ef:s=1536x1024:d=1" \
             -vf "drawbox=x=0:y=0:w=1536:h=84:color=0x111111:t=fill,drawbox=x=0:y=951:w=1536:h=73:color=0x111111:t=fill,drawgrid=w=256:h=438:t=5:c=0x888888@0.8" \
-            -frames:v 1 assets/source/character-master-sheet.png
-          ffprobe -v error -show_entries stream=width,height -of default=noprint_wrappers=1 assets/source/character-master-sheet.png
+            -frames:v 1 ci-master-sheet.png
+          ffprobe -v error -show_entries stream=width,height -of default=noprint_wrappers=1 ci-master-sheet.png
 
-      - name: Run Stage 1 fallback build
+      - name: Run real Stage 1 acceptance path
         shell: pwsh
         env:
           HF_CAPTURE_FPS: '5'
           HF_CAPTURE_SCALE: '0.3'
-        run: ./scripts/build-all.ps1 -Quality draft -Renderer fallback
+        run: ./run-stage1.ps1 -MasterSheet ./ci-master-sheet.png -Quality draft -Renderer fallback -SkipSetup -NoOpen
 
       - name: Print QA reports
         if: always()
