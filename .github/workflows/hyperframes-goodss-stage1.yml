@@ -1,0 +1,84 @@
+name: hyperframes-goodss Stage 1 smoke
+
+on:
+  push:
+    paths:
+      - 'hyperframes-goodss/**'
+      - '.github/workflows/hyperframes-goodss-stage1.yml'
+  workflow_dispatch:
+
+jobs:
+  stage1-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: hyperframes-goodss
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: hyperframes-goodss/package.json
+
+      - name: Verify tools
+        run: |
+          node --version
+          npm --version
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
+          which google-chrome || which chromium || which chromium-browser || true
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prepare GSAP vendor runtime
+        shell: bash
+        run: |
+          mkdir -p vendor
+          cp node_modules/gsap/dist/gsap.min.js vendor/gsap.min.js
+
+      - name: Generate CI master-sheet fixture
+        shell: bash
+        run: |
+          mkdir -p assets/source
+          ffmpeg -y -v error \
+            -f lavfi -i "color=c=0xf5f3ef:s=1536x1024:d=1" \
+            -vf "drawbox=x=0:y=0:w=1536:h=84:color=0x111111:t=fill,drawbox=x=0:y=951:w=1536:h=73:color=0x111111:t=fill,drawgrid=w=256:h=438:t=5:c=0x888888@0.8" \
+            -frames:v 1 assets/source/character-master-sheet.png
+          ffprobe -v error -show_entries stream=width,height -of default=noprint_wrappers=1 assets/source/character-master-sheet.png
+
+      - name: Run Stage 1 fallback build
+        shell: pwsh
+        env:
+          HF_CAPTURE_FPS: '10'
+          HF_CAPTURE_SCALE: '0.4'
+        run: ./scripts/build-all.ps1 -Quality draft -Renderer fallback
+
+      - name: Print QA reports
+        if: always()
+        shell: bash
+        run: |
+          echo '--- Long QA ---'
+          cat renders/qa-long.json 2>/dev/null || true
+          echo '--- Short QA ---'
+          cat renders/qa-short.json 2>/dev/null || true
+
+      - name: Upload Stage 1 smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyperframes-goodss-stage1-smoke
+          if-no-files-found: warn
+          path: |
+            hyperframes-goodss/renders/style-showcase-long-fixed.mp4
+            hyperframes-goodss/renders/style-showcase-short-fixed.mp4
+            hyperframes-goodss/renders/qa-long.json
+            hyperframes-goodss/renders/qa-short.json
+            hyperframes-goodss/renders/inspect-long.json
+            hyperframes-goodss/renders/inspect-short.json
