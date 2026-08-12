@@ -35,7 +35,7 @@ if ($Renderer -eq 'hyperframes') {
   Assert-Exit 'HyperFrames CLI probe'
   $UseHyperFrames = $true
 }
-elif ($Renderer -eq 'fallback') {
+elseif ($Renderer -eq 'fallback') {
   $UseHyperFrames = $false
 }
 else {
@@ -44,7 +44,8 @@ else {
   if ($LASTEXITCODE -eq 0) {
     $UseHyperFrames = $true
     Write-Host '[P0] HyperFrames CLI found. Using official renderer.' -ForegroundColor Green
-  } else {
+  }
+  else {
     $UseHyperFrames = $false
     Write-Warning '[P0] HyperFrames CLI unavailable. Using deterministic Chromium fallback renderer.'
   }
@@ -67,7 +68,8 @@ if ($UseHyperFrames) {
     if ($code -ne 0) { throw "[P0] Long inspect failed (exit $code)." }
     & npx --yes hyperframes render --output $LongRaw --fps 30 --quality $Quality --strict
     Assert-Exit 'Long render'
-  } finally { Pop-Location }
+  }
+  finally { Pop-Location }
 
   Write-Host "`n=== 6/8 HyperFrames lint / inspect / render: Short ===" -ForegroundColor Cyan
   Push-Location (Join-Path $Root 'projects\short')
@@ -80,8 +82,10 @@ if ($UseHyperFrames) {
     if ($code -ne 0) { throw "[P0] Short inspect failed (exit $code)." }
     & npx --yes hyperframes render --output $ShortRaw --fps 30 --quality $Quality --strict
     Assert-Exit 'Short render'
-  } finally { Pop-Location }
-} else {
+  }
+  finally { Pop-Location }
+}
+else {
   Run-Step '5/8 Fallback Chromium render: Long' {
     & node .\scripts\render-fallback.mjs projects/long/index.html style-long 30 1920 1080 renders/style-showcase-long-raw.mp4
   }
@@ -104,8 +108,9 @@ Assert-Exit 'Long QA'
 & node .\scripts\qa-video.mjs .\renders\style-showcase-short-fixed.mp4 1080 1920 .\renders\qa-short.json
 Assert-Exit 'Short QA'
 
+$RendererLabel = if ($UseHyperFrames) { 'HyperFrames' } else { 'Fallback Chromium' }
 Write-Host "`n[P0] STAGE 1 AUTOMATED BUILD PASSED" -ForegroundColor Green
-Write-Host "Renderer: $(if ($UseHyperFrames) {'HyperFrames'} else {'Fallback Chromium'})"
+Write-Host "Renderer: $RendererLabel"
 Write-Host 'Long : renders\style-showcase-long-fixed.mp4'
 Write-Host 'Short: renders\style-showcase-short-fixed.mp4'
 Write-Host 'QA   : renders\qa-long.json / renders\qa-short.json'
