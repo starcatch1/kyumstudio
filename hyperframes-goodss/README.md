@@ -1,205 +1,194 @@
-# hyperframes-goodss — Stage 2A Data-driven Engine
+# hyperframes-goodss — Stage 2B Music-driven Engine
 
-HyperFrames 기반 영상 생성 프로젝트입니다. Stage 1/1.1에서 검증한 렌더·호환 인코딩·QA 코어를 유지하면서, Stage 2A부터는 **`project.json`이 콘텐츠와 타임라인의 source of truth**가 됩니다.
+HyperFrames 기반 데이터 주도형 영상 생성 프로젝트입니다. Stage 1/1.1의 렌더·호환 인코딩·QA 코어와 Stage 2A의 `project.json` 장면 계약을 유지하면서, Stage 2B에서 **실제 음악 분석·Beat Sync·Narration·BGM Ducking·Audio QA**를 추가했습니다.
 
 ## 현재 상태
 
-- **Stage 1 engineering core: COMPLETE / frozen**
-- **Stage 1.1 preset system: ACCEPTED / frozen semantics**
-- **Stage 2A generic project schema + timing engine: COMPLETE / CI PASS**
-- 다음 개발: **Stage 2B external audio / beat sync / narration**
+| Milestone | Status |
+|---|---|
+| Stage 1 renderer / compatibility / video QA | COMPLETE / frozen |
+| Stage 1.1 presets | ACCEPTED / frozen semantics |
+| Stage 2A generic scene/timing engine | COMPLETE / schema v2 frozen |
+| **Stage 2B external audio / beat / narration** | **COMPLETE / CI PASS** |
+| Stage 2C lightweight Web UI | NEXT |
 
-상세 판정은 `STAGE1_1_STATUS.md`, `STAGE2A_STATUS.md`에 기록합니다.
+상세 판정은 `STAGE1_1_STATUS.md`, `STAGE2A_STATUS.md`, `STAGE2B_STATUS.md`에 기록합니다.
 
-## Stage 2A 핵심 변화
-
-이전에는 마스터 시트 12룩과 Long/Short 장면 구성이 코드에 가까이 묶여 있었습니다. 이제 아래 항목을 프로젝트 데이터로 정의합니다.
+## Stage 2B 핵심 파이프라인
 
 ```text
-project.json
-→ asset registry (image / video)
-→ compositions
-→ arbitrary scenes
-→ per-scene duration / transition / layout / text
-→ validation
+project schema v3
+→ image / video / audio asset registry
+→ external BGM
+→ ffprobe metadata + FFmpeg PCM decode
+→ BPM / beat-grid / onset analysis
+→ safe scene-boundary beat snap
+→ narration file or HyperFrames TTS adapter
+→ timed narration caption clips
+→ sidechain BGM ducking
+→ 2-pass loudness normalization
 → HyperFrames or Chromium render
 → frozen H.264/AAC compatibility encode
-→ frozen full-decode QA
+→ video QA + audio QA
 ```
 
-## 프로젝트 구조 예시
+Stage 2A schema v2는 그대로 유지하며, Stage 2B는 `schemaVersion: 3`으로 명시적으로 확장합니다. 정식 v3 구조는 `config/project.schema.v3.json`입니다.
+
+## Stage 2B audio 예시
 
 ```json
 {
-  "schemaVersion": 2,
-  "id": "my-video",
-  "quality": "high",
-  "presets": {
-    "visual": "editorial-clean",
-    "caption": "editorial-card",
-    "audio": "minimal-electronic"
+  "schemaVersion": 3,
+  "audio": {
+    "mode": "external",
+    "bgm": {
+      "asset": "music",
+      "volume": 0.28,
+      "loop": false,
+      "start": 0
+    },
+    "beatSync": {
+      "enabled": true,
+      "maxSnap": 0.22,
+      "minSceneDuration": 1.5,
+      "bpmMin": 70,
+      "bpmMax": 160,
+      "minConfidence": 0.10,
+      "candidateSource": "beats"
+    },
+    "narration": {
+      "mode": "file",
+      "asset": "narration",
+      "start": 4.0,
+      "volume": 1.0,
+      "captions": [
+        {"start": 4.15, "duration": 1.45, "text": "Timed narration caption"}
+      ]
+    },
+    "ducking": {
+      "enabled": true,
+      "threshold": 0.025,
+      "ratio": 8,
+      "attackMs": 20,
+      "releaseMs": 320
+    },
+    "normalization": {
+      "targetLufs": -14,
+      "truePeak": -1.5,
+      "lra": 11
+    }
   },
   "assets": {
-    "hero": { "type": "image", "src": "assets/hero.png" },
-    "clip": { "type": "video", "src": "assets/clip.mp4" }
-  },
-  "compositions": [
-    {
-      "id": "main",
-      "width": 1920,
-      "height": 1080,
-      "fps": 30,
-      "duration": "auto",
-      "scenes": [
-        {
-          "id": "intro",
-          "kind": "title",
-          "duration": 2.5,
-          "layout": "center",
-          "transition": { "type": "lime-wipe", "duration": 0.5 },
-          "text": { "title": "My Video" }
-        },
-        {
-          "id": "hero-scene",
-          "kind": "media",
-          "asset": "hero",
-          "duration": 3.2,
-          "layout": "full",
-          "transition": "cut",
-          "text": { "title": "Data-driven scene" }
-        }
-      ]
-    }
-  ]
+    "music": {"type": "audio", "src": "assets/music.mp3"},
+    "narration": {"type": "audio", "src": "assets/narration.wav"}
+  }
 }
 ```
 
-정식 구조 정의는 `config/project.schema.v2.json`을 참고합니다.
+각 scene은 `snapEnd: false`로 Beat Snap을 개별 비활성화할 수 있습니다. 기본값은 snap 허용이며, `maxSnap`과 `minSceneDuration` 안전 규칙 안에서만 컷이 이동합니다. 최종 composition 길이는 유지됩니다.
 
-## 지원 범위
-
-### Assets
+## 지원 자산
 
 - image
-- video
-- video `mediaStart`
+- video (`mediaStart` 지원)
+- audio
 
-### Scenes
-
-- `title`
-- `media`
-- `text`
-- `end`
-
-### Layouts
-
-- `center`
-- `split`
-- `full`
-
-### Transitions
-
-- `cut`
-- `lime-wipe`
-- `black-wipe`
-- `center-split`
-
-### Timing
-
-- 장면별 자유로운 `duration`
-- `start` 생략 시 순차 자동 배치
-- 필요하면 명시적 `start`
-- composition `duration: "auto"`
-- 동일 track overlap 검증
-- duration/asset/transition timing 검증
-
-현재 Stage 2A 출력은 기존 QA 호환성을 위해 30 fps를 기준으로 합니다.
-
-## 프리셋
-
-Stage 1.1의 프리셋을 그대로 재사용합니다.
-
-Visual:
-- `editorial-clean`
-- `fashion-luxury`
-- `social-dynamic`
-
-Caption:
-- `minimal-lower-third`
-- `editorial-card`
-- `bold-kinetic`
-
-Audio:
-- `minimal-electronic`
-- `soft-ambient`
-- `fashion-beat`
+Visual scene 종류는 `title`, `media`, `text`, `end`, layout은 `center`, `split`, `full`, transition은 `cut`, `lime-wipe`, `black-wipe`, `center-split`을 유지합니다.
 
 ## Windows 실행
 
-기본 Stage 2A 프로젝트 실행:
+Stage 2B 음악 샘플:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\run-stage2a.ps1 `
-  -ProjectFile .\project.json `
+powershell -ExecutionPolicy Bypass -File .\run-stage2b.ps1 `
+  -ProjectFile .\samples\stage2b-music\project.json `
   -Quality high `
   -Renderer auto
 ```
 
-또는 `run-stage2a.cmd`를 실행합니다. 다른 project JSON을 CMD 파일 위에 드래그해도 됩니다.
-
-기존 캐릭터 마스터 시트를 갱신하면서 Stage 2A 프로젝트를 만들 경우:
+나레이션 샘플:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\run-stage2a.ps1 `
-  -ProjectFile .\project.json `
-  -MasterSheet "C:\path\character-master-sheet.png" `
+powershell -ExecutionPolicy Bypass -File .\run-stage2b.ps1 `
+  -ProjectFile .\samples\stage2b-narration\project.json `
   -Quality high `
   -Renderer auto
 ```
 
-## 검증 샘플
+또는 `run-stage2b.cmd`를 실행하거나 project JSON을 CMD 파일 위에 드래그할 수 있습니다.
 
-### Character showcase
+Stage 2A 프로젝트는 기존 `run-stage2a.ps1` / `run-stage2a.cmd`로 계속 실행할 수 있습니다.
 
-`project.json`
+## Stage 2B 검증 샘플
 
-- 12 image assets
-- Long: 1920×1080 / 30 s / 10 scenes
-- Short: 1080×1920 / 17 s / 6 scenes
+### Music-driven Short
 
-### Non-character image + video
+`samples/stage2b-music/project.json`
 
-`samples/non-character/project.json`
+- 1080×1920 / 30 fps / 14 s
+- deterministic 120 BPM CI fixture
+- BPM 분석 약 120 BPM / confidence 약 0.995
+- 4개 내부 scene boundary 모두 안전한 인접 beat로 snap
+- 총 영상 길이 유지
+- video QA PASS
+- audio QA PASS
 
-- image/SVG assets
-- moving H.264 video fixture
-- 1280×720 / 13.2 s / 5 scenes
-- 2.0 / 2.8 / 3.2 s 등 서로 다른 scene duration
+### Narration-driven Long
 
-두 프로젝트 모두 같은 Stage 2A generator/runner를 사용하고 codec/full-decode QA를 통과합니다.
+`samples/stage2b-narration/project.json`
 
-## 출력 위치
+- 1920×1080 / 30 fps / 14 s
+- external BGM path
+- narration file path
+- timed caption cues
+- sidechain BGM ducking
+- full-duration narration-sidechain padding
+- 2-pass loudness normalization
+- video QA PASS
+- audio QA PASS
 
-```text
-renders/stage2a/<project-id>/
-  <composition-id>-fixed.mp4
-  <composition-id>-qa.json
-  <composition-id>-inspect.json
-  project-validation.json
-  build-report.json
-```
+TTS 모드는 HyperFrames CLI `tts` adapter가 연결되어 있습니다. CI는 재현성을 위해 file narration을 검증하며 외부/cloud TTS 공급자 자체를 CI acceptance 대상으로 간주하지 않습니다.
 
-최종 MP4 규격은 기존 검증 규격을 유지합니다.
+## QA
+
+기존 최종 MP4 규격은 유지합니다.
 
 - H.264 Main
 - yuv420p
 - 30 fps
 - AAC 48 kHz stereo
 - MP4 faststart
-- FFmpeg full-decode QA
+- FFmpeg full-decode
 
-## 개발 원칙
+Stage 2B는 별도 mixed-audio QA도 수행합니다.
 
-Stage 2A는 기존 렌더러/QA를 대체하지 않습니다. 콘텐츠 계약을 바깥으로 분리하고 검증된 Stage 1 코어를 재사용합니다.
+- expected duration
+- 48 kHz
+- stereo
+- full decode
+- integrated LUFS target guard
+- true-peak guard
 
-다음 단계인 **Stage 2B**에서는 이 프로젝트 데이터 구조 위에 외부 음악, beat/onset 분석, beat-aware transition, narration/TTS, ducking, mix QA를 추가합니다.
+## 출력 위치
+
+```text
+renders/stage2b/<project-id>/
+  <composition-id>-fixed.mp4
+  <composition-id>-video-qa.json
+  <composition-id>-audio-qa.json
+  <composition-id>-inspect.json
+  project-validation.json
+  build-report.json
+
+generated/stage2b/<project-id>/
+  audio-analysis.json
+  timing-report.json
+  resolved-project.json
+  audio-manifest.json
+```
+
+## 최종 검증 기준
+
+Stage 2B implementation baseline commit `4821b03887790c609081f25ae7a898e4d4f43f9b`는 GitHub Actions run `31674429248`에서 **Stage 1 → Stage 1.1 → Stage 2A → Stage 2B Music Short → Stage 2B Narration Long** 전체 회귀를 `success`로 통과했습니다.
+
+다음 단계는 **Stage 2C — Lightweight Web UI**입니다. UI는 새 파이프라인을 만드는 것이 아니라 현재 검증된 schema v3 / runner / QA를 편집·호출하는 얇은 계층으로 구현합니다.
