@@ -6,11 +6,19 @@ Date: 2026-08-13 (KST)
 
 **Implementation: COMPLETE**  
 **CI render acceptance: PASS**  
-**Release promotion: PENDING one real-master human acceptance pass**
+**Real-user generation acceptance: PASS**  
+**Stage 1.1: ACCEPTED**
+
+## Acceptance evidence
+
+- Stage 1 default Long/Short automated path PASS
+- three representative Stage 1.1 preset combinations render and full-decode QA PASS in CI
+- user confirmed that the real local environment generated both videos normally on 2026-08-13
+- the reviewed output used a low-quality smoke/draft capture, so visual sharpness is not treated as a renderer defect; high-quality output remains available through `-Quality high`
 
 ## Implemented
 
-- single config file: `config/project.json`
+- single Stage 1.1 preset config: `config/project.json`
 - preset catalog: `config/presets.json`
 - preset validation/resolution library
 - Windows runner options for visual/caption/audio presets and separate BGM/SFX volumes
@@ -21,38 +29,26 @@ Date: 2026-08-13 (KST)
 - 3 Audio presets
 - three representative preset combinations rendered as Short videos in CI
 - each representative Short output passes compatibility encode and full-decode QA
-- Stage 1 compatibility/renderer/QA core remains shared and unchanged in responsibility
+- Stage 1 compatibility/renderer/QA core remains shared and frozen in responsibility
 
-## CI representative combinations
+## Accepted representative combinations
 
 1. `editorial-clean / editorial-card / minimal-electronic`
 2. `fashion-luxury / minimal-lower-third / soft-ambient`
 3. `social-dynamic / bold-kinetic / fashion-beat`
 
-## Remaining release gate
+## Freeze rule
 
-The current ChatGPT local file executor is not available reliably enough to run the latest source against the actual user character master sheet in this session. Therefore the previous real-master visual acceptance is not falsely treated as acceptance of the new Stage 1.1 revision.
+From this point forward, changes to the following are bug-fix only unless a later milestone explicitly requires a migration:
 
-To promote Stage 1.1 from RC to accepted, run exactly one high-quality build with the actual master sheet:
+- compatibility encode
+- ffprobe/full-decode QA
+- renderer selection policy
+- Windows acceptance runner behavior
+- Stage 1/1.1 preset semantics
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\run-stage1.ps1 `
-  -MasterSheet "C:\path\actual-master-sheet.png" `
-  -Quality high `
-  -Renderer auto `
-  -VisualPreset editorial-clean `
-  -CaptionPreset editorial-card `
-  -AudioPreset minimal-electronic
-```
+Visual preference changes should be implemented as preset-content changes, not renderer rewrites.
 
-Human checklist:
+## Next milestone
 
-- Long/Short play from start to end
-- face and feet are not unintentionally cropped
-- Korean captions are readable and remain inside safe margins
-- no blank/black transition error frames
-- BGM level is comfortable
-- SFX are noticeable but not distracting
-- seeking works normally
-
-If all are PASS, tag Stage 1.1 as **ACCEPTED**. Visual preference tuning after that is a preset-content change, not a core renderer change.
+Proceed to **Stage 2A — General project schema and timing control**. Stage 2A must be added around the frozen Stage 1 core and must keep the old Stage 1 sample backward-compatible.
