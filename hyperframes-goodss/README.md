@@ -1,68 +1,89 @@
-# hyperframes-goodss — Stage 1 COMPLETE
+# hyperframes-goodss — Stage 1.1 Preset RC
 
-캐릭터 스타일 마스터 시트 1장을 입력해 **롱폼(16:9)** 과 **숏폼(9:16)** 스타일 소개 영상을 반복 생성하는 Stage 1 프로젝트입니다.
+캐릭터 스타일 마스터 시트 1장을 입력해 **롱폼(16:9)** 과 **숏폼(9:16)** 스타일 소개 영상을 반복 생성하는 HyperFrames 프로젝트입니다.
 
 ## 현재 상태
 
-**Stage 1 engineering acceptance: COMPLETE**
+- **Stage 1 engineering core: COMPLETE / frozen**
+- **Stage 1.1 preset system: implemented and CI render PASS**
+- 마지막 release gate: 최신 Stage 1.1 코드 + 실제 사용자 마스터 시트의 최종 human acceptance 1회
 
-사용자 실제 재생 확인을 통과했고, 고화질 acceptance 렌더 및 최신 GitHub Actions end-to-end smoke test에서 전체 파이프라인이 PASS했습니다. 완료 판정 근거는 `STAGE1_COMPLETE.md`에 기록합니다.
+Stage 1의 compatibility encode, renderer selection, full-decode QA, Windows runner, CI gate는 새 프리셋 기능 때문에 별도로 재구현하지 않습니다.
 
-## Stage 1 파이프라인
+## Stage 1.1 프리셋
 
-```text
-master sheet
-→ 12 look extraction
-→ deterministic BGM + transition SFX generation
-→ data-driven Long / Short composition generation
-→ independent project preparation
-→ static validation
-→ HyperFrames render (preferred) or deterministic Chromium fallback
-→ high-quality H.264/AAC compatibility encode
-→ ffprobe validation
-→ full FFmpeg decode QA
-→ final MP4
+### Visual
+
+- `editorial-clean` — 밝고 정돈된 현재 기본 패션 에디토리얼
+- `fashion-luxury` — dark / gold / premium / slower motion
+- `social-dynamic` — 모바일 숏폼용 강한 대비와 빠른 전환
+
+### Caption
+
+- `minimal-lower-third`
+- `editorial-card`
+- `bold-kinetic`
+
+### Audio
+
+- `minimal-electronic`
+- `soft-ambient`
+- `fashion-beat`
+
+BGM/SFX는 코드에서 결정론적으로 생성하며 `bgmVolume`, `sfxVolume`을 별도로 조정할 수 있습니다.
+
+## 단일 설정 파일
+
+`config/project.json`
+
+```json
+{
+  "visualPreset": "editorial-clean",
+  "captionPreset": "editorial-card",
+  "audioPreset": "minimal-electronic",
+  "bgmVolume": 0.18,
+  "sfxVolume": 0.28,
+  "quality": "high"
+}
 ```
 
-## 최종 규격
+프리셋 정의는 `config/presets.json`이 source of truth입니다.
 
-- Long: 1920×1080 / 30 fps / 30 s
-- Short: 1080×1920 / 30 fps / 17 s
-- Video: H.264 Main / yuv420p / faststart
-- Audio: AAC / 48 kHz / stereo
-- Transition: lime wipe / black reverse wipe / center split
-- Audio: deterministic minimal electronic BGM + whoosh/chime SFX
-- Acceptance default quality: `high` (CRF 17 / slow / AAC 192 kbps)
+## Windows 실행
 
-## 가장 쉬운 Windows 실행
+기본 프리셋으로 가장 쉽게 실행하려면 `run-stage1.cmd` 위에 마스터 시트 이미지를 드래그 앤 드롭합니다.
 
-`run-stage1.cmd` 위에 마스터 시트 이미지를 드래그 앤 드롭합니다.
-
-자동으로 다음을 수행합니다.
-
-```text
-input image
-→ source normalization
-→ environment setup
-→ 12-look extraction
-→ BGM/SFX generation
-→ Long/Short composition
-→ render
-→ high-quality compatibility encode
-→ automated QA
-→ two final MP4 files open
-```
-
-PowerShell 직접 실행:
+PowerShell에서 프리셋을 직접 지정할 수도 있습니다.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\run-stage1.ps1 `
   -MasterSheet "C:\path\master-sheet.png" `
   -Quality high `
-  -Renderer auto
+  -Renderer auto `
+  -VisualPreset fashion-luxury `
+  -CaptionPreset minimal-lower-third `
+  -AudioPreset soft-ambient `
+  -BgmVolume 0.18 `
+  -SfxVolume 0.24
 ```
 
-최종 파일:
+## 전체 파이프라인
+
+```text
+master sheet
+→ 12 look extraction
+→ resolve Stage 1.1 config
+→ preset-driven BGM/SFX generation
+→ preset-driven Long/Short composition generation
+→ independent project preparation
+→ static validation
+→ HyperFrames render preferred / Chromium fallback
+→ H.264/AAC compatibility encode
+→ ffprobe + full FFmpeg decode QA
+→ final MP4
+```
+
+## 최종 파일
 
 ```text
 renders/style-showcase-long-fixed.mp4
@@ -73,7 +94,23 @@ renders/inspect-long.json
 renders/inspect-short.json
 ```
 
-## 품질 프로필
+## Stage 1.1 CI 검증
+
+CI는 기본 Stage 1 경로에 더해 아래 3개 대표 조합을 실제 Short MP4까지 렌더하고 codec/full-decode QA를 수행합니다.
+
+1. editorial-clean + editorial-card + minimal-electronic
+2. fashion-luxury + minimal-lower-third + soft-ambient
+3. social-dynamic + bold-kinetic + fashion-beat
+
+이 테스트는 저해상도/저fps CI capture를 사용하므로 **파이프라인 회귀 검증용**이며 최종 화질 평가용이 아닙니다.
+
+## 출력 규격
+
+- Long: 1920×1080 / 30 fps / 약 30 s
+- Short: 1080×1920 / 30 fps / 약 17 s
+- Video: H.264 Main / yuv420p / faststart
+- Audio: AAC / 48 kHz / stereo
+- Acceptance default: `high`
 
 | Profile | Video | Preset | Audio |
 |---|---|---|---|
@@ -81,48 +118,14 @@ renders/inspect-short.json
 | standard | CRF 19 | medium | AAC 160 kbps |
 | draft | CRF 22 | fast | AAC 128 kbps |
 
-CI는 빠른 smoke test를 위해 `draft`와 낮은 fallback capture rate를 사용합니다. 실제 acceptance와 사용자 출력은 `high`가 기본값입니다.
+## Acceptance 원칙
 
-## Stage 1 QA
+자동 QA가 PASS하더라도 실제 마스터 시트를 사용한 최종 릴리스에서는 사람이 다음을 확인합니다.
 
-최종 `*-fixed.mp4`만 acceptance 대상으로 사용합니다.
+- 얼굴/발의 의도치 않은 crop 없음
+- 한국어 자막 안전영역/가독성
+- blank/black error frame 없음
+- BGM/SFX 음량이 방해되지 않음
+- seek 및 끝까지 재생 정상
 
-```text
-[PASS] file exists and has meaningful size
-[PASS] H.264 Main
-[PASS] yuv420p
-[PASS] target resolution
-[PASS] 30 fps
-[PASS] AAC audio / 48 kHz / stereo
-[PASS] valid duration
-[PASS] MP4 faststart
-[PASS] full-file decode without FFmpeg errors
-```
-
-## Stage 1에서 완료된 디자인/모션
-
-- Long: 캐릭터 53% + 정보 47% editorial layout
-- Short: micro navigation + image card + caption layout
-- 4가지 Short caption variation
-- chapter / metadata / title / tag entrance hierarchy
-- restrained image zoom
-- lime progress bar
-- 3종 transition
-- 검은 빈 프레임을 만들지 않는 transition policy
-- 코드에서 재현 가능한 BGM/SFX
-
-## 다음 개발
-
-Stage 1 파이프라인은 고정합니다. 이후 시각적 취향 조정은 **Stage 1.1**, 기능 확장은 **Stage 2**에서 진행합니다.
-
-Stage 1.1 후보:
-- visual preset 2~3개
-- BGM preset 2~3개
-- caption preset 선택
-
-Stage 2 후보:
-- TTS / narration
-- 외부 음악 beat sync
-- timing editor
-- AI video/image asset 조합
-- 웹 UI 기반 입력·편집·렌더
+Stage 1.1 구현 상태와 남은 실제 마스터 acceptance는 `STAGE1_1_STATUS.md`에 기록합니다.
