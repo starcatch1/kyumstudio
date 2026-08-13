@@ -47,9 +47,13 @@ for(const comp of project.compositions){
     const d=project.audio.ducking,n=project.audio.narration,filters=[];
     filters.push(`[0:a]atrim=0:${duration},asetpts=PTS-STARTPTS,volume=${project.audio.bgm.volume}[bgm]`);let mix='bgm';
     if(narration){
-      const delay=Math.round(n.start*1000);filters.push(`[1:a]asetpts=PTS-STARTPTS,volume=${n.volume},adelay=${delay}|${delay}[nar]`);
-      if(d.enabled){filters.push(`[bgm][nar]sidechaincompress=threshold=${d.threshold}:ratio=${d.ratio}:attack=${d.attackMs}:release=${d.releaseMs}[duck]`);filters.push('[duck][nar]amix=inputs=2:duration=longest:normalize=0[mix]');}
-      else filters.push('[bgm][nar]amix=inputs=2:duration=longest:normalize=0[mix]');
+      const delay=Math.round(n.start*1000);
+      filters.push(`[1:a]asetpts=PTS-STARTPTS,volume=${n.volume},adelay=${delay}|${delay}[nar0]`);
+      if(d.enabled){
+        filters.push('[nar0]asplit=2[nar_sc][nar_mix]');
+        filters.push(`[bgm][nar_sc]sidechaincompress=threshold=${d.threshold}:ratio=${d.ratio}:attack=${d.attackMs}:release=${d.releaseMs}[duck]`);
+        filters.push('[duck][nar_mix]amix=inputs=2:duration=longest:normalize=0[mix]');
+      } else filters.push('[bgm][nar0]amix=inputs=2:duration=longest:normalize=0[mix]');
       mix='mix';
     }
     filters.push(`[${mix}]atrim=0:${duration},aformat=sample_rates=48000:channel_layouts=stereo[out]`);
