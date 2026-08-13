@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <rect width="1600" height="1000" fill="#F4F7FF"/>
+  <circle cx="430" cy="470" r="300" fill="#5B6CFF"/>
+  <circle cx="740" cy="430" r="180" fill="#C8FF3D" opacity="0.95"/>
+  <rect x="930" y="250" width="420" height="500" rx="80" fill="#10131A"/>
+  <text x="1010" y="470" font-family="Arial, sans-serif" font-size="86" font-weight="700" fill="#FFFFFF">MOVE</text>
+  <text x="1010" y="570" font-family="Arial, sans-serif" font-size="86" font-weight="700" fill="#FFFFFF">WITH</text>
+  <text x="1010" y="670" font-family="Arial, sans-serif" font-size="86" font-weight="700" fill="#C8FF3D">DATA</text>
+</svg>
