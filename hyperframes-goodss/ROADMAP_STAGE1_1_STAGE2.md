@@ -1,228 +1,178 @@
-# hyperframes-goodss — Next Development Roadmap
+# hyperframes-goodss — Development Roadmap
 
 Date: 2026-08-13 (KST)
 
-## 0. Current decision
+## Current milestone state
 
-Stage 1 engineering pipeline is COMPLETE. The current pipeline supports:
+| Milestone | Status | Decision |
+|---|---|---|
+| Stage 1 — stable Long/Short renderer | COMPLETE | frozen except bug fixes |
+| Stage 1.1 — presets/usability | ACCEPTED | preset semantics frozen |
+| Stage 2A — generic project schema/timing | COMPLETE | schema v2 engineering gate PASS |
+| Stage 2B — external audio/beat/narration | NEXT | begin after Stage 2A final CI |
+| Stage 2C — lightweight Web UI | PLANNED | depends on stable Stage 2B/project contract |
+
+---
+
+## Stage 1 — COMPLETE
+
+Delivered and verified:
 
 - master sheet → 12 look extraction
-- data-driven Long / Short composition generation
-- 3 transition types
-- deterministic BGM + transition SFX
-- high / standard / draft quality profiles
-- H.264/AAC/faststart compatibility output
-- FFmpeg full-decode QA
-- HyperFrames CLI preferred + Chromium fallback
-- Windows drag-and-drop runner
-- GitHub Actions end-to-end smoke test
+- Long / Short generation
+- transitions and deterministic BGM/SFX
+- high / standard / draft output profiles
+- HyperFrames preferred + Chromium fallback
+- H.264 Main / yuv420p / AAC 48 kHz stereo / faststart
+- ffprobe + full FFmpeg decode QA
+- Windows runner
 
-The latest CI pipeline is green. However, the latest transition + BGM/SFX revision still needs one final human acceptance pass with the real character master sheet. This is the first next task and is treated as a Stage 1 closure check, not a new feature.
+The user confirmed local Long/Short generation works. Core output/QA responsibility is frozen.
 
 ---
 
-## 1. Stage 1 final closure — 2026-08-13
+## Stage 1.1 — ACCEPTED
 
-### Goal
-Render the real character master sheet with the latest pipeline and verify the exact version that includes the latest transitions and BGM/SFX.
+Delivered:
 
-### Tasks
+- Visual presets: `editorial-clean`, `fashion-luxury`, `social-dynamic`
+- Caption presets: `minimal-lower-third`, `editorial-card`, `bold-kinetic`
+- Audio presets: `minimal-electronic`, `soft-ambient`, `fashion-beat`
+- separate BGM/SFX volume
+- deterministic preset-driven audio
+- preset regression renders in CI
 
-1. Run `run-stage1.ps1` with the real master sheet using `-Quality high -Renderer auto`.
-2. Verify Long and Short from beginning to end.
-3. Check:
-   - no unintended crop of face/feet
-   - Korean caption readability and safe margins
-   - no blank/black transition frames
-   - BGM level does not overpower the content
-   - SFX level is not distracting
-   - seeking works and both videos reach the end normally
-4. Fix only blocking defects.
-5. Re-run QA and freeze Stage 1 core pipeline.
+The low-quality smoke output was confirmed to generate normally in the real environment. High quality remains a selectable output profile.
+
+---
+
+## Stage 2A — COMPLETE
+
+### Goal achieved
+
+The fixed character-style showcase has been converted into a reusable data-driven HyperFrames engine.
+
+### Delivered
+
+- `project.json` schemaVersion 2 as content/timeline source of truth
+- formal schema: `config/project.schema.v2.json`
+- arbitrary composition count
+- arbitrary scene count
+- image and video assets
+- scene types: title/media/text/end
+- layouts: center/split/full
+- arbitrary per-scene durations
+- sequential automatic start or explicit start
+- per-scene transition selection
+- auto composition duration
+- asset registry and missing asset checks
+- same-track overlap checks
+- explicit duration consistency checks
+- transition timing safety checks
+- deterministic video seeking in Chromium fallback
+- generic Windows runner: `run-stage2a.ps1` / `run-stage2a.cmd`
+- existing character project represented entirely by `project.json`
+- independent non-character image+video sample without renderer-template modification
+- Stage 1/1.1 backward compatibility regression gate
 
 ### Exit criteria
 
-- real-master Long PASS
-- real-master Short PASS
-- automated QA PASS
-- human visual/audio acceptance PASS
-- no core Stage 1 changes afterward except bug fixes
+- existing character showcase entirely expressible as project data — PASS
+- second non-character project generated without changing renderer template — PASS
+- legacy Stage 1 path remains green — PASS
+- final codec/full-decode QA — PASS
+
+Stage 2A schema v2 should now change only through explicit migration/versioning.
 
 ---
 
-## 2. Stage 1.1 — Preset and usability layer — 2026-08-14 to 2026-08-17
+## Stage 2B — NEXT
 
-### Goal
-Make the stable Stage 1 pipeline useful for repeated real content production without changing its renderer/QA core.
+### Objective
 
-### Scope
+Make scene timing react to real audio and narration instead of relying only on manually specified durations.
 
-#### A. Visual presets
-Create 3 selectable visual presets.
+### Work order
 
-1. `editorial-clean` — current default
-2. `fashion-luxury` — darker, premium, slower motion
-3. `social-dynamic` — stronger typography and faster short-form pacing
+1. **External audio asset contract**
+   - BGM/audio file registration in `project.json`
+   - duration/sample-rate/channel inspection
+   - safe local path validation
 
-Each preset defines:
+2. **Audio analysis layer**
+   - waveform metadata
+   - beat estimation
+   - onset/energy markers
+   - analysis JSON cached per source audio
 
-- palette
-- typography scale
-- image/card layout
-- caption styles
-- transition set
-- motion speed
+3. **Beat-aware timing**
+   - snap scene boundaries to selected beats
+   - keep manual timing as source-of-truth option
+   - transition timing suggestions rather than destructive automatic rewriting
 
-#### B. Caption presets
+4. **Narration/TTS track contract**
+   - narration script per scene
+   - external narration WAV/MP3 support first
+   - generated TTS adapter separated from core schema
+   - caption timing metadata
 
-- minimal lower-third
-- editorial card
-- bold kinetic
+5. **Mixing**
+   - BGM ducking under narration
+   - narration/BGM/SFX gains
+   - fade policy
+   - peak/loudness guardrails
 
-#### C. Audio presets
+6. **Stage 2B QA samples**
+   - one music-driven Short
+   - one narration-driven Long
+   - final outputs must still pass Stage 1 compatibility/full-decode QA
 
-- minimal electronic
-- soft ambient
-- fashion beat
+### Stage 2B exit criteria
 
-Provide separate BGM and SFX level controls.
-
-#### D. Single config file
-Introduce a project-level configuration such as:
-
-```json
-{
-  "visualPreset": "editorial-clean",
-  "captionPreset": "editorial-card",
-  "audioPreset": "minimal-electronic",
-  "bgmVolume": 0.18,
-  "sfxVolume": 0.28,
-  "quality": "high"
-}
-```
-
-### Test
-Render one real master sheet with all 3 visual presets in Short format first. Only after those are approved, render Long variants.
-
-### Exit criteria
-
-- preset selection does not modify the Stage 1 core renderer
-- 3 visual presets PASS
-- 3 caption presets PASS
-- 3 audio presets PASS
-- configuration is reproducible
-- one-click Windows build still PASS
+- external audio can drive one real project without editing renderer code
+- beat/onset analysis is deterministic and saved as data
+- user can choose manual timing or beat-assisted timing
+- narration remains intelligible over BGM
+- music-driven Short sample PASS
+- narration-driven Long sample PASS
+- Stage 1/1.1/2A regression remains green
 
 ---
 
-## 3. Stage 2A — General project schema and timing control — 2026-08-18 to 2026-08-22
+## Stage 2C — PLANNED
 
-### Goal
-Move from a fixed character-style showcase to a reusable HyperFrames content engine.
+### Objective
 
-### Tasks
+Provide a small Windows-first Web UI that edits the same tested project contract rather than inventing another pipeline.
 
-1. Introduce `project.json` as the source of truth.
-2. Separate content from template code.
-3. Support arbitrary scene count instead of fixed 12-look assumptions.
-4. Add per-scene duration and transition selection.
-5. Add optional image/video asset types.
-6. Add basic timeline validation:
-   - no overlapping clips on the same track
-   - duration consistency
-   - missing asset detection
-   - invalid transition timing detection
+Minimum scope:
 
-### Exit criteria
+- create/open project
+- asset registration
+- preset selection
+- scene add/delete/reorder
+- duration/transition editing
+- preview
+- output quality selection
+- render
+- QA result display
 
-- the existing character showcase can be expressed entirely as `project.json`
-- a second non-character sample can be created without changing renderer code
-- old Stage 1 sample remains backward-compatible
+Explicitly excluded from first UI version:
 
----
-
-## 4. Stage 2B — External audio, beat sync, narration — 2026-08-23 to 2026-08-28
-
-### Goal
-Make timing react to actual music and narration rather than only fixed durations.
-
-### Tasks
-
-1. external BGM import
-2. waveform / duration inspection
-3. beat/onset analysis
-4. beat-aware scene transition suggestions
-5. TTS/narration track support
-6. BGM ducking under narration
-7. caption timing from narration script
-8. audio normalization and final mix QA
-
-### Exit criteria
-
-- one music-driven Short sample
-- one narration-driven Long sample
-- transitions can snap to selected beats
-- narration and BGM levels remain intelligible
-- final output still passes existing compatibility QA
-
----
-
-## 5. Stage 2C — Lightweight Web UI — 2026-08-29 to 2026-09-04
-
-### Goal
-Allow normal use without manually editing JSON or PowerShell commands.
-
-### Minimum UI
-
-1. create/open project
-2. choose input assets
-3. choose visual/caption/audio preset
-4. scene list and duration editing
-5. preview
-6. render quality selection
-7. render button
-8. QA status/result links
-
-### Explicitly excluded from first UI version
-
-- full NLE-style timeline
+- full NLE timeline
 - complex keyframe editor
-- cloud account system
-- collaboration
-- large template marketplace
-
-### Exit criteria
-
-- user can create and render a new project without editing source files
-- Windows-first workflow works end-to-end
-- UI calls the same tested renderer/QA pipeline rather than creating a second pipeline
+- collaboration/cloud account system
+- template marketplace
 
 ---
 
-## 6. Development priority rule
-
-Do not work on all stages in parallel.
-
-Priority order:
+## Development priority rule
 
 ```text
-Stage 1 real-master final acceptance
-→ Stage 1.1 presets
-→ Stage 2A project schema/timing
-→ Stage 2B audio/narration
-→ Stage 2C lightweight UI
+Stage 1 / 1.1 frozen core
+→ Stage 2A schema v2 frozen after final CI
+→ Stage 2B audio/timing
+→ Stage 2C UI
 ```
 
-If a milestone fails its exit criteria, stop expansion and fix that milestone before continuing.
-
-## 7. Core stability rule
-
-The following Stage 1 components are considered frozen after final real-master acceptance:
-
-- compatibility encode
-- ffprobe/full-decode QA
-- renderer selection policy
-- Windows acceptance runner behavior
-- CI smoke-test gate
-
-New features should be added around these components rather than rewriting them.
+Do not build Stage 2C around assumptions that have not survived Stage 2B. Each milestone must keep previous regression gates green before expansion continues.
