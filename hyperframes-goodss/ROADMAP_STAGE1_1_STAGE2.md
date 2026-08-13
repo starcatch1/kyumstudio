@@ -8,9 +8,9 @@ Date: 2026-08-13 (KST)
 |---|---|---|
 | Stage 1 — stable Long/Short renderer | COMPLETE | frozen except bug fixes |
 | Stage 1.1 — presets/usability | ACCEPTED | preset semantics frozen |
-| Stage 2A — generic project schema/timing | COMPLETE | schema v2 engineering gate PASS |
-| Stage 2B — external audio/beat/narration | NEXT | begin after Stage 2A final CI |
-| Stage 2C — lightweight Web UI | PLANNED | depends on stable Stage 2B/project contract |
+| Stage 2A — generic project schema/timing | COMPLETE | schema v2 frozen |
+| **Stage 2B — external audio/beat/narration** | **COMPLETE** | schema v3/audio timing gate PASS |
+| **Stage 2C — lightweight Web UI** | **NEXT** | build on tested Stage 2B contract |
 
 ---
 
@@ -18,16 +18,15 @@ Date: 2026-08-13 (KST)
 
 Delivered and verified:
 
-- master sheet → 12 look extraction
-- Long / Short generation
+- master sheet → Long / Short generation
 - transitions and deterministic BGM/SFX
-- high / standard / draft output profiles
+- high / standard / draft profiles
 - HyperFrames preferred + Chromium fallback
 - H.264 Main / yuv420p / AAC 48 kHz stereo / faststart
 - ffprobe + full FFmpeg decode QA
 - Windows runner
 
-The user confirmed local Long/Short generation works. Core output/QA responsibility is frozen.
+Core output/QA responsibility is frozen.
 
 ---
 
@@ -39,130 +38,178 @@ Delivered:
 - Caption presets: `minimal-lower-third`, `editorial-card`, `bold-kinetic`
 - Audio presets: `minimal-electronic`, `soft-ambient`, `fashion-beat`
 - separate BGM/SFX volume
-- deterministic preset-driven audio
-- preset regression renders in CI
-
-The low-quality smoke output was confirmed to generate normally in the real environment. High quality remains a selectable output profile.
+- deterministic preset regression renders
 
 ---
 
 ## Stage 2A — COMPLETE
 
+Delivered:
+
+- `schemaVersion: 2`
+- formal schema `config/project.schema.v2.json`
+- arbitrary compositions/scenes
+- image/video assets
+- scene types/layouts/transitions
+- arbitrary scene durations
+- automatic or explicit start timing
+- asset/duration/overlap/transition validation
+- deterministic video seeking in Chromium fallback
+- Windows `run-stage2a.ps1` / `run-stage2a.cmd`
+- character project and independent non-character image+video sample
+- Stage 1/1.1 regression gate
+
+Stage 2A schema v2 changes now require an explicit migration/version bump.
+
+---
+
+## Stage 2B — COMPLETE
+
 ### Goal achieved
 
-The fixed character-style showcase has been converted into a reusable data-driven HyperFrames engine.
+Real audio can now drive video timing, narration can coexist with BGM, and final mixed audio has its own acceptance gate.
 
 ### Delivered
 
-- `project.json` schemaVersion 2 as content/timeline source of truth
-- formal schema: `config/project.schema.v2.json`
-- arbitrary composition count
-- arbitrary scene count
-- image and video assets
-- scene types: title/media/text/end
-- layouts: center/split/full
-- arbitrary per-scene durations
-- sequential automatic start or explicit start
-- per-scene transition selection
-- auto composition duration
-- asset registry and missing asset checks
-- same-track overlap checks
-- explicit duration consistency checks
-- transition timing safety checks
-- deterministic video seeking in Chromium fallback
-- generic Windows runner: `run-stage2a.ps1` / `run-stage2a.cmd`
-- existing character project represented entirely by `project.json`
-- independent non-character image+video sample without renderer-template modification
-- Stage 1/1.1 backward compatibility regression gate
+- `schemaVersion: 3`
+- formal schema `config/project.schema.v3.json`
+- audio assets
+- external WAV/MP3-compatible FFmpeg input path
+- ffprobe audio metadata inspection
+- deterministic PCM analysis
+- BPM estimation
+- beat-grid phase detection
+- onset candidates
+- cached `audio-analysis.json`
+- beat/onset/hybrid candidate policy
+- safe scene-boundary Beat Snap
+- total composition duration preservation
+- max-snap guard
+- minimum-scene-duration guard
+- per-scene `snapEnd`
+- narration file support
+- HyperFrames CLI TTS adapter
+- timed narration caption cues
+- sidechain BGM ducking
+- full-duration narration sidechain padding
+- two-pass loudness normalization
+- 48 kHz stereo mixed WAV
+- separate audio QA for duration/sample rate/channels/decode/LUFS/true peak
+- Windows `run-stage2b.ps1` / `run-stage2b.cmd`
 
-### Exit criteria
+### Exit samples
 
-- existing character showcase entirely expressible as project data — PASS
-- second non-character project generated without changing renderer template — PASS
-- legacy Stage 1 path remains green — PASS
-- final codec/full-decode QA — PASS
+#### Music-driven Short — PASS
 
-Stage 2A schema v2 should now change only through explicit migration/versioning.
+`samples/stage2b-music/project.json`
 
----
+- 1080×1920
+- 30 fps
+- 14 s
+- ~120 BPM analysis
+- confidence ~0.995
+- 4/4 interior boundaries beat-snapped
+- video QA PASS
+- audio QA PASS
 
-## Stage 2B — NEXT
+#### Narration-driven Long — PASS
 
-### Objective
+`samples/stage2b-narration/project.json`
 
-Make scene timing react to real audio and narration instead of relying only on manually specified durations.
+- 1920×1080
+- 30 fps
+- 14 s
+- external BGM path
+- narration file
+- timed caption cues
+- sidechain ducking
+- two-pass loudness normalization
+- full-duration audio
+- video QA PASS
+- audio QA PASS
 
-### Work order
+### Engineering gate
 
-1. **External audio asset contract**
-   - BGM/audio file registration in `project.json`
-   - duration/sample-rate/channel inspection
-   - safe local path validation
+Implementation baseline:
 
-2. **Audio analysis layer**
-   - waveform metadata
-   - beat estimation
-   - onset/energy markers
-   - analysis JSON cached per source audio
+`4821b03887790c609081f25ae7a898e4d4f43f9b`
 
-3. **Beat-aware timing**
-   - snap scene boundaries to selected beats
-   - keep manual timing as source-of-truth option
-   - transition timing suggestions rather than destructive automatic rewriting
+GitHub Actions run:
 
-4. **Narration/TTS track contract**
-   - narration script per scene
-   - external narration WAV/MP3 support first
-   - generated TTS adapter separated from core schema
-   - caption timing metadata
+`31674429248` / run 84 — **success**
 
-5. **Mixing**
-   - BGM ducking under narration
-   - narration/BGM/SFX gains
-   - fade policy
-   - peak/loudness guardrails
+The same run passed Stage 1, Stage 1.1, Stage 2A character/non-character projects, Stage 2B music Short and Stage 2B narration Long.
 
-6. **Stage 2B QA samples**
-   - one music-driven Short
-   - one narration-driven Long
-   - final outputs must still pass Stage 1 compatibility/full-decode QA
-
-### Stage 2B exit criteria
-
-- external audio can drive one real project without editing renderer code
-- beat/onset analysis is deterministic and saved as data
-- user can choose manual timing or beat-assisted timing
-- narration remains intelligible over BGM
-- music-driven Short sample PASS
-- narration-driven Long sample PASS
-- Stage 1/1.1/2A regression remains green
+Stage 2B schema v3 semantics should now change only through explicit migration/versioning or narrowly scoped bug fixes.
 
 ---
 
-## Stage 2C — PLANNED
+## Stage 2C — NEXT
 
 ### Objective
 
-Provide a small Windows-first Web UI that edits the same tested project contract rather than inventing another pipeline.
+Provide a small Windows-first Web UI that edits and invokes the same tested Stage 2B schema/runner/QA pipeline.
 
-Minimum scope:
+### Phase 2C.1 — Project shell
 
 - create/open project
-- asset registration
-- preset selection
-- scene add/delete/reorder
-- duration/transition editing
-- preview
-- output quality selection
-- render
-- QA result display
+- schema v3 JSON load/save
+- validation result panel
+- unsaved-change protection
+- Windows local workflow first
 
-Explicitly excluded from first UI version:
+### Phase 2C.2 — Assets and audio
 
-- full NLE timeline
+- image/video/audio asset registration
+- local path selection
+- BGM selection
+- narration file/script controls
+- audio metadata display
+- BPM/confidence/beat analysis result display
+
+### Phase 2C.3 — Scene editor
+
+- add/delete/reorder scene
+- duration
+- layout
+- transition
+- `snapEnd`
+- beat-snap settings
+- narration caption cues
+
+### Phase 2C.4 — Preview and render
+
+- composition preview
+- timing/beat markers
+- quality selection
+- renderer selection
+- render button
+- progress/log surface
+- output/open-folder action
+
+### Phase 2C.5 — QA surface
+
+- video QA result
+- audio QA result
+- duration/LUFS/true-peak status
+- build-report links
+
+### Explicitly excluded from first UI version
+
+- full NLE-style timeline
 - complex keyframe editor
+- DAW-grade waveform editing
 - collaboration/cloud account system
 - template marketplace
+
+### Stage 2C exit criteria
+
+- a user can create/open a schema v3 project without editing JSON manually
+- image/video/audio assets can be configured through the UI
+- a scene can be added/reordered and beat-snap configured
+- music Short and narration Long can be rendered through the existing Stage 2B runner
+- existing QA results are surfaced rather than reimplemented
+- Stage 1/1.1/2A/2B regression remains green
 
 ---
 
@@ -170,9 +217,9 @@ Explicitly excluded from first UI version:
 
 ```text
 Stage 1 / 1.1 frozen core
-→ Stage 2A schema v2 frozen after final CI
-→ Stage 2B audio/timing
-→ Stage 2C UI
+→ Stage 2A schema v2 frozen
+→ Stage 2B schema v3/audio timing frozen after successful CI
+→ Stage 2C lightweight UI
 ```
 
-Do not build Stage 2C around assumptions that have not survived Stage 2B. Each milestone must keep previous regression gates green before expansion continues.
+Do not create a second renderer, second mixer, or second QA implementation in Stage 2C. The UI must remain a thin control layer over the tested project contract and runners.
