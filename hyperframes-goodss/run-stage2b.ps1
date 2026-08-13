@@ -24,7 +24,7 @@ $S=Join-Path $Root 'scripts/stage2b'
 $ReportDir=Join-Path $Root "renders/stage2b/$ProjectId";New-Item -ItemType Directory -Force -Path $ReportDir|Out-Null
 Run-Step '1/8 Prepare audio fixtures/assets' {& node (Join-Path $S 'prepare-assets.mjs') $ProjectPath}
 Write-Host "`n=== 2/8 Validate Stage 2B schema/assets ===" -ForegroundColor Cyan
-$validation=& node (Join-Path $S 'validate-project.mjs') $ProjectPath 2>&1;$vc=$LASTEXITCODE;$validation|Set-Content -Encoding utf8 (Join-Path $ReportDir 'project-validation.json');$validation|Write-Host;if($vc-ne 0){throw '[P2B] project validation failed'}
+$validation=& node (Join-Path $S 'validate-project.mjs') $ProjectPath 2>&1;$vc=$LASTEXITCODE;$validation|Set-Content -Encoding utf8 (Join-Path $ReportDir 'project-validation.json');$validation|Write-Host;if($vc -ne 0){throw '[P2B] project validation failed'}
 Run-Step '3/8 Analyze external BGM beat/onset' {& node (Join-Path $S 'analyze-audio.mjs') $ProjectPath}
 Run-Step '4/8 Resolve scene boundaries to music' {& node (Join-Path $S 'resolve-timing.mjs') $ProjectPath}
 Run-Step '5/8 Build BGM + narration + ducking mix' {& node (Join-Path $S 'build-audio.mjs') $ProjectPath}
@@ -38,7 +38,7 @@ Write-Host "`n=== 7/8 Render + compatibility encode ===" -ForegroundColor Cyan
 foreach($Comp in $Manifest.compositions){
   $id=[string]$Comp.id;$rawRel="renders/stage2b/$ProjectId/$id-raw.mp4";$fixedRel="renders/stage2b/$ProjectId/$id-fixed.mp4";$inspectRel="renders/stage2b/$ProjectId/$id-inspect.json";$rawAbs=Join-Path $Root $rawRel;$fixedAbs=Join-Path $Root $fixedRel;$inspectAbs=Join-Path $Root $inspectRel
   Write-Host "[P2B] Rendering $id ($($Comp.width)x$($Comp.height), $($Comp.duration)s)" -ForegroundColor Yellow
-  if($UseHyperFrames){Push-Location (Join-Path $Root ([string]$Comp.directory));try{& npx --yes hyperframes lint --verbose;Assert-Exit "$id lint";$inspect=& npx --yes hyperframes inspect --json --samples 12 2>&1;$ic=$LASTEXITCODE;$inspect|Set-Content -Encoding utf8 $inspectAbs;if($ic-ne 0){throw "$id inspect failed"};& npx --yes hyperframes render --output $rawAbs --fps 30 --quality $EffectiveQuality --strict;Assert-Exit "$id render"}finally{Pop-Location}}
+  if($UseHyperFrames){Push-Location (Join-Path $Root ([string]$Comp.directory));try{& npx --yes hyperframes lint --verbose;Assert-Exit "$id lint";$inspect=& npx --yes hyperframes inspect --json --samples 12 2>&1;$ic=$LASTEXITCODE;$inspect|Set-Content -Encoding utf8 $inspectAbs;if($ic -ne 0){throw "$id inspect failed"};& npx --yes hyperframes render --output $rawAbs --fps 30 --quality $EffectiveQuality --strict;Assert-Exit "$id render"}finally{Pop-Location}}
   else{& node $Fallback ([string]$Comp.html) $id ([string]$Comp.duration) ([string]$Comp.width) ([string]$Comp.height) $rawRel;Assert-Exit "$id fallback render";@{renderer='fallback';composition=$id}|ConvertTo-Json|Set-Content -Encoding utf8 $inspectAbs}
   $audioAbs=if($Comp.audio){Join-Path $Root ([string]$Comp.audio)}else{''}
   & $Compat -InputFile $rawAbs -OutputFile $fixedAbs -Width ([int]$Comp.width) -Height ([int]$Comp.height) -AudioFile $audioAbs -Quality $EffectiveQuality;Assert-Exit "$id compatibility encode"
