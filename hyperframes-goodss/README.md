@@ -1,131 +1,205 @@
-# hyperframes-goodss — Stage 1.1 Preset RC
+# hyperframes-goodss — Stage 2A Data-driven Engine
 
-캐릭터 스타일 마스터 시트 1장을 입력해 **롱폼(16:9)** 과 **숏폼(9:16)** 스타일 소개 영상을 반복 생성하는 HyperFrames 프로젝트입니다.
+HyperFrames 기반 영상 생성 프로젝트입니다. Stage 1/1.1에서 검증한 렌더·호환 인코딩·QA 코어를 유지하면서, Stage 2A부터는 **`project.json`이 콘텐츠와 타임라인의 source of truth**가 됩니다.
 
 ## 현재 상태
 
 - **Stage 1 engineering core: COMPLETE / frozen**
-- **Stage 1.1 preset system: implemented and CI render PASS**
-- 마지막 release gate: 최신 Stage 1.1 코드 + 실제 사용자 마스터 시트의 최종 human acceptance 1회
+- **Stage 1.1 preset system: ACCEPTED / frozen semantics**
+- **Stage 2A generic project schema + timing engine: COMPLETE / CI PASS**
+- 다음 개발: **Stage 2B external audio / beat sync / narration**
 
-Stage 1의 compatibility encode, renderer selection, full-decode QA, Windows runner, CI gate는 새 프리셋 기능 때문에 별도로 재구현하지 않습니다.
+상세 판정은 `STAGE1_1_STATUS.md`, `STAGE2A_STATUS.md`에 기록합니다.
 
-## Stage 1.1 프리셋
+## Stage 2A 핵심 변화
 
-### Visual
+이전에는 마스터 시트 12룩과 Long/Short 장면 구성이 코드에 가까이 묶여 있었습니다. 이제 아래 항목을 프로젝트 데이터로 정의합니다.
 
-- `editorial-clean` — 밝고 정돈된 현재 기본 패션 에디토리얼
-- `fashion-luxury` — dark / gold / premium / slower motion
-- `social-dynamic` — 모바일 숏폼용 강한 대비와 빠른 전환
+```text
+project.json
+→ asset registry (image / video)
+→ compositions
+→ arbitrary scenes
+→ per-scene duration / transition / layout / text
+→ validation
+→ HyperFrames or Chromium render
+→ frozen H.264/AAC compatibility encode
+→ frozen full-decode QA
+```
 
-### Caption
+## 프로젝트 구조 예시
 
+```json
+{
+  "schemaVersion": 2,
+  "id": "my-video",
+  "quality": "high",
+  "presets": {
+    "visual": "editorial-clean",
+    "caption": "editorial-card",
+    "audio": "minimal-electronic"
+  },
+  "assets": {
+    "hero": { "type": "image", "src": "assets/hero.png" },
+    "clip": { "type": "video", "src": "assets/clip.mp4" }
+  },
+  "compositions": [
+    {
+      "id": "main",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "duration": "auto",
+      "scenes": [
+        {
+          "id": "intro",
+          "kind": "title",
+          "duration": 2.5,
+          "layout": "center",
+          "transition": { "type": "lime-wipe", "duration": 0.5 },
+          "text": { "title": "My Video" }
+        },
+        {
+          "id": "hero-scene",
+          "kind": "media",
+          "asset": "hero",
+          "duration": 3.2,
+          "layout": "full",
+          "transition": "cut",
+          "text": { "title": "Data-driven scene" }
+        }
+      ]
+    }
+  ]
+}
+```
+
+정식 구조 정의는 `config/project.schema.v2.json`을 참고합니다.
+
+## 지원 범위
+
+### Assets
+
+- image
+- video
+- video `mediaStart`
+
+### Scenes
+
+- `title`
+- `media`
+- `text`
+- `end`
+
+### Layouts
+
+- `center`
+- `split`
+- `full`
+
+### Transitions
+
+- `cut`
+- `lime-wipe`
+- `black-wipe`
+- `center-split`
+
+### Timing
+
+- 장면별 자유로운 `duration`
+- `start` 생략 시 순차 자동 배치
+- 필요하면 명시적 `start`
+- composition `duration: "auto"`
+- 동일 track overlap 검증
+- duration/asset/transition timing 검증
+
+현재 Stage 2A 출력은 기존 QA 호환성을 위해 30 fps를 기준으로 합니다.
+
+## 프리셋
+
+Stage 1.1의 프리셋을 그대로 재사용합니다.
+
+Visual:
+- `editorial-clean`
+- `fashion-luxury`
+- `social-dynamic`
+
+Caption:
 - `minimal-lower-third`
 - `editorial-card`
 - `bold-kinetic`
 
-### Audio
-
+Audio:
 - `minimal-electronic`
 - `soft-ambient`
 - `fashion-beat`
 
-BGM/SFX는 코드에서 결정론적으로 생성하며 `bgmVolume`, `sfxVolume`을 별도로 조정할 수 있습니다.
-
-## 단일 설정 파일
-
-`config/project.json`
-
-```json
-{
-  "visualPreset": "editorial-clean",
-  "captionPreset": "editorial-card",
-  "audioPreset": "minimal-electronic",
-  "bgmVolume": 0.18,
-  "sfxVolume": 0.28,
-  "quality": "high"
-}
-```
-
-프리셋 정의는 `config/presets.json`이 source of truth입니다.
-
 ## Windows 실행
 
-기본 프리셋으로 가장 쉽게 실행하려면 `run-stage1.cmd` 위에 마스터 시트 이미지를 드래그 앤 드롭합니다.
-
-PowerShell에서 프리셋을 직접 지정할 수도 있습니다.
+기본 Stage 2A 프로젝트 실행:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\run-stage1.ps1 `
-  -MasterSheet "C:\path\master-sheet.png" `
+powershell -ExecutionPolicy Bypass -File .\run-stage2a.ps1 `
+  -ProjectFile .\project.json `
   -Quality high `
-  -Renderer auto `
-  -VisualPreset fashion-luxury `
-  -CaptionPreset minimal-lower-third `
-  -AudioPreset soft-ambient `
-  -BgmVolume 0.18 `
-  -SfxVolume 0.24
+  -Renderer auto
 ```
 
-## 전체 파이프라인
+또는 `run-stage2a.cmd`를 실행합니다. 다른 project JSON을 CMD 파일 위에 드래그해도 됩니다.
+
+기존 캐릭터 마스터 시트를 갱신하면서 Stage 2A 프로젝트를 만들 경우:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-stage2a.ps1 `
+  -ProjectFile .\project.json `
+  -MasterSheet "C:\path\character-master-sheet.png" `
+  -Quality high `
+  -Renderer auto
+```
+
+## 검증 샘플
+
+### Character showcase
+
+`project.json`
+
+- 12 image assets
+- Long: 1920×1080 / 30 s / 10 scenes
+- Short: 1080×1920 / 17 s / 6 scenes
+
+### Non-character image + video
+
+`samples/non-character/project.json`
+
+- image/SVG assets
+- moving H.264 video fixture
+- 1280×720 / 13.2 s / 5 scenes
+- 2.0 / 2.8 / 3.2 s 등 서로 다른 scene duration
+
+두 프로젝트 모두 같은 Stage 2A generator/runner를 사용하고 codec/full-decode QA를 통과합니다.
+
+## 출력 위치
 
 ```text
-master sheet
-→ 12 look extraction
-→ resolve Stage 1.1 config
-→ preset-driven BGM/SFX generation
-→ preset-driven Long/Short composition generation
-→ independent project preparation
-→ static validation
-→ HyperFrames render preferred / Chromium fallback
-→ H.264/AAC compatibility encode
-→ ffprobe + full FFmpeg decode QA
-→ final MP4
+renders/stage2a/<project-id>/
+  <composition-id>-fixed.mp4
+  <composition-id>-qa.json
+  <composition-id>-inspect.json
+  project-validation.json
+  build-report.json
 ```
 
-## 최종 파일
+최종 MP4 규격은 기존 검증 규격을 유지합니다.
 
-```text
-renders/style-showcase-long-fixed.mp4
-renders/style-showcase-short-fixed.mp4
-renders/qa-long.json
-renders/qa-short.json
-renders/inspect-long.json
-renders/inspect-short.json
-```
+- H.264 Main
+- yuv420p
+- 30 fps
+- AAC 48 kHz stereo
+- MP4 faststart
+- FFmpeg full-decode QA
 
-## Stage 1.1 CI 검증
+## 개발 원칙
 
-CI는 기본 Stage 1 경로에 더해 아래 3개 대표 조합을 실제 Short MP4까지 렌더하고 codec/full-decode QA를 수행합니다.
+Stage 2A는 기존 렌더러/QA를 대체하지 않습니다. 콘텐츠 계약을 바깥으로 분리하고 검증된 Stage 1 코어를 재사용합니다.
 
-1. editorial-clean + editorial-card + minimal-electronic
-2. fashion-luxury + minimal-lower-third + soft-ambient
-3. social-dynamic + bold-kinetic + fashion-beat
-
-이 테스트는 저해상도/저fps CI capture를 사용하므로 **파이프라인 회귀 검증용**이며 최종 화질 평가용이 아닙니다.
-
-## 출력 규격
-
-- Long: 1920×1080 / 30 fps / 약 30 s
-- Short: 1080×1920 / 30 fps / 약 17 s
-- Video: H.264 Main / yuv420p / faststart
-- Audio: AAC / 48 kHz / stereo
-- Acceptance default: `high`
-
-| Profile | Video | Preset | Audio |
-|---|---|---|---|
-| high | CRF 17 | slow | AAC 192 kbps |
-| standard | CRF 19 | medium | AAC 160 kbps |
-| draft | CRF 22 | fast | AAC 128 kbps |
-
-## Acceptance 원칙
-
-자동 QA가 PASS하더라도 실제 마스터 시트를 사용한 최종 릴리스에서는 사람이 다음을 확인합니다.
-
-- 얼굴/발의 의도치 않은 crop 없음
-- 한국어 자막 안전영역/가독성
-- blank/black error frame 없음
-- BGM/SFX 음량이 방해되지 않음
-- seek 및 끝까지 재생 정상
-
-Stage 1.1 구현 상태와 남은 실제 마스터 acceptance는 `STAGE1_1_STATUS.md`에 기록합니다.
+다음 단계인 **Stage 2B**에서는 이 프로젝트 데이터 구조 위에 외부 음악, beat/onset 분석, beat-aware transition, narration/TTS, ducking, mix QA를 추가합니다.
