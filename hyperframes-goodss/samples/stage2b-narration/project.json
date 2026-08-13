@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 3,
+  "id": "narration-ducking-sample",
+  "title": "Stage 2B Narration Ducking Sample",
+  "quality": "draft",
+  "presets": {"visual": "editorial-clean", "caption": "editorial-card"},
+  "audio": {
+    "mode": "external",
+    "bgm": {"asset": "music", "volume": 0.28, "loop": false, "start": 0},
+    "beatSync": {"enabled": true, "maxSnap": 0.22, "minSceneDuration": 1.5, "bpmMin": 70, "bpmMax": 140, "minConfidence": 0.10, "candidateSource": "beats"},
+    "narration": {
+      "mode": "file",
+      "asset": "narration",
+      "start": 4.0,
+      "volume": 1.0,
+      "captions": [
+        {"start": 4.15, "duration": 1.45, "text": "나레이션이 시작되면 배경음이 자동으로 내려갑니다."},
+        {"start": 5.80, "duration": 1.45, "text": "장면 전환은 음악의 비트에 맞춰 유지됩니다."},
+        {"start": 7.45, "duration": 1.45, "text": "음성과 음악은 마지막에 같은 믹스 QA를 통과합니다."}
+      ]
+    },
+    "ducking": {"enabled": true, "threshold": 0.025, "ratio": 8, "attackMs": 20, "releaseMs": 320},
+    "normalization": {"targetLufs": -14, "truePeak": -1.5, "lra": 11}
+  },
+  "preprocessors": [
+    {"type": "beat-audio-fixture", "output": "assets/music-fixture.wav", "duration": 14, "bpm": 100},
+    {"type": "narration-fixture", "output": "assets/narration-fixture.wav", "duration": 5.2}
+  ],
+  "assets": {
+    "scene-a": {"type": "image", "src": "assets/scene-a.svg"},
+    "music": {"type": "audio", "src": "assets/music-fixture.wav"},
+    "narration": {"type": "audio", "src": "assets/narration-fixture.wav"}
+  },
+  "compositions": [
+    {
+      "id": "narration-landscape",
+      "title": "Narration Ducking Landscape",
+      "width": 1280,
+      "height": 720,
+      "fps": 30,
+      "duration": "auto",
+      "scenes": [
+        {"id": "intro", "kind": "title", "duration": 2.90, "layout": "center", "transition": {"type": "lime-wipe", "duration": 0.4}, "text": {"kicker": "STAGE 2B · VOICE + MUSIC", "title": "음악 위에 나레이션을\n안전하게 얹습니다", "body": "Beat Sync와 Ducking을 같은 프로젝트에서 처리합니다."}},
+        {"id": "voice", "kind": "media", "asset": "scene-a", "duration": 3.20, "layout": "full", "transition": {"type": "black-wipe", "duration": 0.4}, "text": {"label": "01", "eyebrow": "DUCKING", "title": "Voice가 들어오면 BGM Down", "body": "sidechain compressor로 음성 구간의 음악 레벨을 자동 제어합니다."}},
+        {"id": "caption", "kind": "media", "asset": "scene-a", "duration": 3.10, "layout": "full", "transition": {"type": "center-split", "duration": 0.4}, "text": {"label": "02", "eyebrow": "CAPTION CUES", "title": "나레이션 자막도 같은 Timeline", "body": "cue start/duration이 별도 timed clip으로 렌더됩니다."}},
+        {"id": "end", "kind": "end", "duration": 4.80, "layout": "center", "transition": "cut", "text": {"kicker": "AUDIO MIX QA", "title": "48 kHz · Stereo · LUFS · True Peak", "body": "최종 믹스는 영상 QA와 별도로 오디오 QA를 통과해야 합니다."}}
+      ]
+    }
+  ]
+}
