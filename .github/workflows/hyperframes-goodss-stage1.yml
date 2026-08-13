@@ -1,4 +1,4 @@
-name: hyperframes-goodss Stage 1 + 1.1 + 2A smoke
+name: hyperframes-goodss Stage 1 + 1.1 + 2A + 2B smoke
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 jobs:
   stage1-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     defaults:
       run:
         working-directory: hyperframes-goodss
@@ -75,40 +75,53 @@ jobs:
       - name: Run Stage 2A validation regression tests
         run: npm run stage2a:test
 
-      - name: Run Stage 2A character project from project.json
+      - name: Run Stage 2A character project
         shell: pwsh
         env:
           HF_CAPTURE_FPS: '4'
           HF_CAPTURE_SCALE: '0.28'
         run: ./run-stage2a.ps1 -ProjectFile ./project.json -Quality draft -Renderer fallback -SkipSetup -NoOpen
 
-      - name: Run Stage 2A non-character image-video sample
+      - name: Run Stage 2A non-character sample
         shell: pwsh
         env:
           HF_CAPTURE_FPS: '4'
           HF_CAPTURE_SCALE: '0.32'
         run: ./run-stage2a.ps1 -ProjectFile ./samples/non-character/project.json -Quality draft -Renderer fallback -SkipSetup -NoOpen
 
+      - name: Run Stage 2B music beat-sync sample
+        shell: pwsh
+        env:
+          HF_CAPTURE_FPS: '4'
+          HF_CAPTURE_SCALE: '0.32'
+        run: ./run-stage2b.ps1 -ProjectFile ./samples/stage2b-music/project.json -Quality draft -Renderer fallback -SkipSetup -NoOpen
+
+      - name: Run Stage 2B narration ducking sample
+        shell: pwsh
+        env:
+          HF_CAPTURE_FPS: '4'
+          HF_CAPTURE_SCALE: '0.32'
+        run: ./run-stage2b.ps1 -ProjectFile ./samples/stage2b-narration/project.json -Quality draft -Renderer fallback -SkipSetup -NoOpen
+
       - name: Print QA reports
         if: always()
         shell: bash
         run: |
-          echo '--- Stage 1 Long QA ---'
+          echo '--- Stage 1 QA ---'
           cat renders/qa-long.json 2>/dev/null || true
-          echo '--- Stage 1 Short QA ---'
           cat renders/qa-short.json 2>/dev/null || true
-          echo '--- Stage 1.1 preset QA ---'
-          for f in renders/preset-*-qa.json; do echo "### $f"; cat "$f"; done 2>/dev/null || true
-          echo '--- Stage 2A QA ---'
-          find renders/stage2a -name '*-qa.json' -type f -print -exec cat {} \; 2>/dev/null || true
-          echo '--- Stage 2A build reports ---'
-          find renders/stage2a -name 'build-report.json' -type f -print -exec cat {} \; 2>/dev/null || true
+          echo '--- Stage 2A reports ---'
+          find renders/stage2a -name '*-qa.json' -o -name 'build-report.json' 2>/dev/null | while read f; do echo "### $f"; cat "$f"; done || true
+          echo '--- Stage 2B reports ---'
+          find renders/stage2b -name '*-qa.json' -o -name 'build-report.json' 2>/dev/null | while read f; do echo "### $f"; cat "$f"; done || true
+          echo '--- Stage 2B timing ---'
+          find generated/stage2b -name 'audio-analysis.json' -o -name 'timing-report.json' 2>/dev/null | while read f; do echo "### $f"; cat "$f"; done || true
 
-      - name: Upload Stage 1 + 1.1 + 2A smoke artifacts
+      - name: Upload Stage 1 through 2B smoke artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: hyperframes-goodss-stage2a-smoke
+          name: hyperframes-goodss-stage2b-smoke
           if-no-files-found: warn
           path: |
             hyperframes-goodss/renders/style-showcase-long-fixed.mp4
@@ -118,7 +131,12 @@ jobs:
             hyperframes-goodss/renders/preset-*-short-fixed.mp4
             hyperframes-goodss/renders/preset-*-qa.json
             hyperframes-goodss/renders/stage2a/**/*
+            hyperframes-goodss/renders/stage2b/**/*
             hyperframes-goodss/generated/stage2a/**/manifest.json
+            hyperframes-goodss/generated/stage2b/**/*
             hyperframes-goodss/project.json
             hyperframes-goodss/samples/non-character/project.json
+            hyperframes-goodss/samples/stage2b-music/project.json
+            hyperframes-goodss/samples/stage2b-narration/project.json
             hyperframes-goodss/config/project.schema.v2.json
+            hyperframes-goodss/config/project.schema.v3.json
