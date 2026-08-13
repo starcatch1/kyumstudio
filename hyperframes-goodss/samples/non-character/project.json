@@ -14,9 +14,19 @@
     "bgmVolume": 0.14,
     "sfxVolume": 0.24
   },
+  "preprocessors": [
+    {
+      "type": "synthetic-video",
+      "output": "assets/motion-fixture.mp4",
+      "width": 1280,
+      "height": 720,
+      "duration": 3.2
+    }
+  ],
   "assets": {
     "card-a": {"type": "image", "src": "assets/card-a.svg"},
-    "card-b": {"type": "image", "src": "assets/card-b.svg"}
+    "card-b": {"type": "image", "src": "assets/card-b.svg"},
+    "motion": {"type": "video", "src": "assets/motion-fixture.mp4"}
   },
   "compositions": [
     {
@@ -48,11 +58,27 @@
           "layout": "full",
           "transition": {"type": "black-wipe", "duration": 0.4},
           "text": {
-            "label": "01 / DATA",
+            "label": "01 / IMAGE",
             "eyebrow": "CONTENT SEPARATION",
-            "title": "콘텐츠와 템플릿 분리",
-            "body": "텍스트와 자산을 JSON에서 바꾸고 렌더 코드는 재사용합니다.",
-            "tags": ["JSON", "REUSE", "HYPERFRAMES"]
+            "title": "이미지도 자산 레지스트리로",
+            "body": "텍스트와 이미지 경로를 JSON에서 바꾸고 렌더 코드는 재사용합니다.",
+            "tags": ["IMAGE", "JSON", "REUSE"]
+          }
+        },
+        {
+          "id": "video-scene",
+          "kind": "media",
+          "asset": "motion",
+          "mediaStart": 0,
+          "duration": 3.2,
+          "layout": "full",
+          "transition": {"type": "center-split", "duration": 0.4},
+          "text": {
+            "label": "02 / VIDEO",
+            "eyebrow": "MEDIA SEEK",
+            "title": "비디오도 같은 Scene 계약",
+            "body": "fallback renderer는 현재 프레임 시간에 맞춰 비디오를 결정론적으로 seek합니다.",
+            "tags": ["VIDEO", "SEEK", "30FPS"]
           }
         },
         {
@@ -61,9 +87,9 @@
           "asset": "card-b",
           "duration": 3.2,
           "layout": "full",
-          "transition": {"type": "center-split", "duration": 0.4},
+          "transition": {"type": "lime-wipe", "duration": 0.4},
           "text": {
-            "label": "02 / TIMING",
+            "label": "03 / TIMING",
             "eyebrow": "ARBITRARY SCENES",
             "title": "장면 길이도 데이터로",
             "body": "2.8초, 3.2초처럼 장면별 길이를 자유롭게 지정할 수 있습니다.",
@@ -79,7 +105,7 @@
           "text": {
             "kicker": "SAME RENDER CORE",
             "title": "캐릭터 전용에서\n범용 영상 엔진으로",
-            "body": "두 번째 샘플은 렌더러 코드 수정 없이 project.json만으로 구성됩니다."
+            "body": "두 번째 샘플은 렌더러 템플릿 코드를 수정하지 않고 project.json만으로 구성됩니다."
           }
         }
       ]
