@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "id": "narration-ducking-sample",
-  "title": "Stage 2B Narration Ducking Sample",
+  "title": "Stage 2B Narration Ducking Long",
   "quality": "draft",
   "presets": {"visual": "editorial-clean", "caption": "editorial-card"},
   "audio": {
@@ -33,10 +33,10 @@
   },
   "compositions": [
     {
-      "id": "narration-landscape",
-      "title": "Narration Ducking Landscape",
-      "width": 1280,
-      "height": 720,
+      "id": "narration-long",
+      "title": "Narration Ducking Long",
+      "width": 1920,
+      "height": 1080,
       "fps": 30,
       "duration": "auto",
       "scenes": [
