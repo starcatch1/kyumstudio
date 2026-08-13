@@ -82,7 +82,7 @@ if ($Renderer -eq 'hyperframes') {
   Assert-Exit 'HyperFrames CLI probe'
   $UseHyperFrames = $true
 }
-elif ($Renderer -eq 'fallback') {
+elseif ($Renderer -eq 'fallback') {
   $UseHyperFrames = $false
 }
 else {
