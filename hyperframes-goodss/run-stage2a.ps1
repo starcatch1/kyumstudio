@@ -22,6 +22,7 @@ function Run-Step([string]$Name, [scriptblock]$Action) {
 
 $ProjectPath = if ([System.IO.Path]::IsPathRooted($ProjectFile)) { $ProjectFile } else { Join-Path $Root $ProjectFile }
 if (-not (Test-Path $ProjectPath)) { throw "[P2A] Project file not found: $ProjectPath" }
+$ProjectPath = (Resolve-Path $ProjectPath).Path
 
 if ($MasterSheet) {
   $MasterPath = if ([System.IO.Path]::IsPathRooted($MasterSheet)) { $MasterSheet } else { Join-Path (Get-Location) $MasterSheet }
@@ -45,7 +46,9 @@ if (-not $ProjectId) { throw '[P2A] project.id is required.' }
 $EffectiveQuality = if ($Quality) { $Quality } elseif ($RawProject.quality) { [string]$RawProject.quality } else { 'high' }
 if ($EffectiveQuality -notin @('draft','standard','high')) { throw "[P2A] Invalid quality: $EffectiveQuality" }
 
-$ProjectArg = [System.IO.Path]::GetRelativePath($Root, $ProjectPath).Replace('\','/')
+# Pass the absolute path to Node. This avoids System.IO.Path.GetRelativePath,
+# which is unavailable in legacy Windows PowerShell/.NET Framework environments.
+$ProjectArg = $ProjectPath
 $PrepareAssets = Join-Path $Root 'scripts/stage2a/prepare-assets.mjs'
 $ValidateProject = Join-Path $Root 'scripts/stage2a/validate-project.mjs'
 $GenerateAudio = Join-Path $Root 'scripts/stage2a/generate-audio.mjs'
@@ -154,7 +157,7 @@ $BuildReport = [pscustomobject]@{
   ok = $true
   schemaVersion = 2
   projectId = $ProjectId
-  projectFile = $ProjectArg
+  projectFile = $ProjectPath
   quality = $EffectiveQuality
   renderer = $RendererLabel
   generatedAt = (Get-Date).ToString('o')
