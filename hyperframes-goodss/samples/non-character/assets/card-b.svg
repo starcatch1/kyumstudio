@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <rect width="1600" height="1000" fill="#111111"/>
+  <rect x="180" y="160" width="1240" height="680" rx="90" fill="#1B1B1B" stroke="#D7B56D" stroke-width="8"/>
+  <path d="M260 650 C520 260, 820 780, 1340 330" fill="none" stroke="#D7B56D" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="520" cy="470" r="120" fill="#F7F4EE"/>
+  <circle cx="1010" cy="560" r="84" fill="#D7B56D"/>
+  <text x="260" y="300" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#F7F4EE">SCENE / TIMING / TRANSITION</text>
+  <text x="260" y="770" font-family="Arial, sans-serif" font-size="48" fill="#C5C0B8">ONE ENGINE · MANY STORIES</text>
+</svg>
