@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 2,
+  "id": "character-style-showcase-v2",
+  "title": "이서영 헤어 & 스타일 가이드",
+  "quality": "high",
+  "presets": {
+    "visual": "editorial-clean",
+    "caption": "editorial-card",
+    "audio": "minimal-electronic"
+  },
+  "audio": {
+    "mode": "synthetic",
+    "preset": "minimal-electronic",
+    "bgmVolume": 0.18,
+    "sfxVolume": 0.28
+  },
+  "preprocessors": [
+    {
+      "type": "stage1-look-grid",
+      "source": "assets/source/character-master-sheet.png"
+    }
+  ],
+  "assets": {
+    "look-01": {"type": "image", "src": "assets/looks/look-01.png"},
+    "look-02": {"type": "image", "src": "assets/looks/look-02.png"},
+    "look-03": {"type": "image", "src": "assets/looks/look-03.png"},
+    "look-04": {"type": "image", "src": "assets/looks/look-04.png"},
+    "look-05": {"type": "image", "src": "assets/looks/look-05.png"},
+    "look-06": {"type": "image", "src": "assets/looks/look-06.png"},
+    "look-07": {"type": "image", "src": "assets/looks/look-07.png"},
+    "look-08": {"type": "image", "src": "assets/looks/look-08.png"},
+    "look-09": {"type": "image", "src": "assets/looks/look-09.png"},
+    "look-10": {"type": "image", "src": "assets/looks/look-10.png"},
+    "look-11": {"type": "image", "src": "assets/looks/look-11.png"},
+    "look-12": {"type": "image", "src": "assets/looks/look-12.png"}
+  },
+  "compositions": [
+    {
+      "id": "style-long-v2",
+      "title": "Character Style Long V2",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "duration": "auto",
+      "scenes": [
+        {
+          "id": "long-intro",
+          "kind": "title",
+          "duration": 3,
+          "layout": "center",
+          "transition": {"type": "lime-wipe", "duration": 0.56},
+          "text": {
+            "kicker": "CHARACTER STYLE SYSTEM · STAGE 2A",
+            "title": "이서영\n헤어 & 스타일 가이드",
+            "badge": "8 LOOKS · LONG SHOWCASE",
+            "body": "장면·자산·타이밍을 project.json만으로 구성한 범용 엔진 샘플"
+          }
+        },
+        {
+          "id": "long-look-01",
+          "kind": "media",
+          "asset": "look-01",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "black-wipe", "duration": 0.56},
+          "text": {"label": "LOOK 01", "eyebrow": "CLEAN DAILY", "title": "기본 캐주얼", "body": "화이트 나시와 핫팬츠로 만든 가장 기본적인 데일리 룩", "tags": ["데일리", "클린", "베이직"]}
+        },
+        {
+          "id": "long-look-02",
+          "kind": "media",
+          "asset": "look-02",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "center-split", "duration": 0.56},
+          "text": {"label": "LOOK 02", "eyebrow": "SOFT HOME", "title": "홈웨어 / 휴식복", "body": "오버핏 티셔츠와 스웨트 팬츠의 편안한 홈 스타일", "tags": ["편안함", "휴식", "내추럴"]}
+        },
+        {
+          "id": "long-look-03",
+          "kind": "media",
+          "asset": "look-03",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "lime-wipe", "duration": 0.56},
+          "text": {"label": "LOOK 03", "eyebrow": "ACTIVE MODE", "title": "러닝 / 운동복", "body": "스포츠 브라탑과 러닝 쇼츠의 활동적인 스포츠 스타일", "tags": ["러닝", "에너지", "스포티"]}
+        },
+        {
+          "id": "long-look-04",
+          "kind": "media",
+          "asset": "look-04",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "black-wipe", "duration": 0.56},
+          "text": {"label": "LOOK 04", "eyebrow": "STREET EDGE", "title": "스트리트 캐주얼", "body": "그래픽 티셔츠와 카고 팬츠로 완성한 트렌디한 스트리트 룩", "tags": ["스트릿", "힙", "데일리"]}
+        },
+        {
+          "id": "long-look-05",
+          "kind": "media",
+          "asset": "look-05",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "center-split", "duration": 0.56},
+          "text": {"label": "LOOK 05", "eyebrow": "OFFICE CHIC", "title": "오피스 / 커리어우먼", "body": "블라우스와 슬랙스로 정돈한 세련된 오피스 스타일", "tags": ["오피스", "커리어", "시크"]}
+        },
+        {
+          "id": "long-look-06",
+          "kind": "media",
+          "asset": "look-06",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "lime-wipe", "duration": 0.56},
+          "text": {"label": "LOOK 06", "eyebrow": "BUSINESS FORMAL", "title": "정장 / 비즈니스 포멀", "body": "블레이저와 슬랙스로 만든 전문적인 비즈니스 스타일", "tags": ["포멀", "프로페셔널", "정장"]}
+        },
+        {
+          "id": "long-look-10",
+          "kind": "media",
+          "asset": "look-10",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "black-wipe", "duration": 0.56},
+          "text": {"label": "LOOK 10", "eyebrow": "ROMANTIC DAY", "title": "로맨틱 데이트룩", "body": "가디건과 플리츠 스커트로 만든 사랑스러운 데이트 스타일", "tags": ["러블리", "데이트", "로맨틱"]}
+        },
+        {
+          "id": "long-look-11",
+          "kind": "media",
+          "asset": "look-11",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "center-split", "duration": 0.56},
+          "text": {"label": "LOOK 11", "eyebrow": "RESORT ESCAPE", "title": "여행 / 리조트룩", "body": "나시 탑과 린넨 팬츠로 만든 가볍고 여유로운 여행 스타일", "tags": ["리조트", "여행", "서머"]}
+        },
+        {
+          "id": "long-end",
+          "kind": "end",
+          "duration": 3,
+          "layout": "center",
+          "transition": "cut",
+          "text": {"kicker": "DATA-DRIVEN HYPERFRAMES", "title": "콘텐츠는 JSON으로\n렌더 코어는 그대로", "body": "Stage 2A는 고정 12룩 구조를 제거하고 임의 장면 수와 타이밍을 지원합니다."}
+        }
+      ]
+    },
+    {
+      "id": "style-short-v2",
+      "title": "Character Style Short V2",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "duration": "auto",
+      "scenes": [
+        {
+          "id": "short-intro",
+          "kind": "title",
+          "duration": 2.5,
+          "layout": "center",
+          "transition": {"type": "lime-wipe", "duration": 0.5},
+          "text": {"kicker": "STYLE SHIFT · PROJECT.JSON", "title": "한 캐릭터,\n다양한 무드", "badge": "4 LOOKS", "body": "출근 · 운동 · 데이트 · 스트릿"}
+        },
+        {
+          "id": "short-look-05",
+          "kind": "media",
+          "asset": "look-05",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "black-wipe", "duration": 0.5},
+          "text": {"label": "01 / 04", "eyebrow": "OFFICE CHIC", "title": "오피스 / 커리어우먼", "body": "블라우스와 슬랙스로 정돈한 세련된 오피스 스타일", "tags": ["오피스", "시크"]}
+        },
+        {
+          "id": "short-look-03",
+          "kind": "media",
+          "asset": "look-03",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "center-split", "duration": 0.5},
+          "text": {"label": "02 / 04", "eyebrow": "ACTIVE MODE", "title": "러닝 / 운동복", "body": "활동적인 스포츠 스타일", "tags": ["러닝", "에너지"]}
+        },
+        {
+          "id": "short-look-10",
+          "kind": "media",
+          "asset": "look-10",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "lime-wipe", "duration": 0.5},
+          "text": {"label": "03 / 04", "eyebrow": "ROMANTIC DAY", "title": "로맨틱 데이트룩", "body": "사랑스럽고 부드러운 데이트 스타일", "tags": ["데이트", "로맨틱"]}
+        },
+        {
+          "id": "short-look-04",
+          "kind": "media",
+          "asset": "look-04",
+          "duration": 3,
+          "layout": "split",
+          "transition": {"type": "black-wipe", "duration": 0.5},
+          "text": {"label": "04 / 04", "eyebrow": "STREET EDGE", "title": "스트리트 캐주얼", "body": "그래픽 티셔츠와 카고 팬츠의 선명한 스트리트 룩", "tags": ["스트릿", "힙"]}
+        },
+        {
+          "id": "short-end",
+          "kind": "end",
+          "duration": 2.5,
+          "layout": "center",
+          "transition": "cut",
+          "text": {"kicker": "STAGE 2A", "title": "장면 수와 길이를\n자유롭게", "body": "템플릿 코드를 수정하지 않고 project.json만 변경합니다."}
+        }
+      ]
+    }
+  ]
+}
