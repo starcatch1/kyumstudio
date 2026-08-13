@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 3,
+  "id": "music-beat-sync-sample",
+  "title": "Stage 2B Music Beat Sync Sample",
+  "quality": "draft",
+  "presets": {"visual": "social-dynamic", "caption": "bold-kinetic"},
+  "audio": {
+    "mode": "external",
+    "bgm": {"asset": "music", "volume": 0.30, "loop": false, "start": 0},
+    "beatSync": {"enabled": true, "maxSnap": 0.26, "minSceneDuration": 1.5, "bpmMin": 80, "bpmMax": 160, "minConfidence": 0.10, "candidateSource": "beats"},
+    "narration": {"mode": "none"},
+    "ducking": {"enabled": false},
+    "normalization": {"targetLufs": -14, "truePeak": -1.5, "lra": 11}
+  },
+  "preprocessors": [
+    {"type": "beat-audio-fixture", "output": "assets/music-fixture.wav", "duration": 14, "bpm": 120}
+  ],
+  "assets": {
+    "scene-a": {"type": "image", "src": "assets/scene-a.svg"},
+    "scene-b": {"type": "image", "src": "assets/scene-b.svg"},
+    "music": {"type": "audio", "src": "assets/music-fixture.wav"}
+  },
+  "compositions": [
+    {
+      "id": "beat-sync-landscape",
+      "title": "Beat Sync Landscape",
+      "width": 1280,
+      "height": 720,
+      "fps": 30,
+      "duration": "auto",
+      "scenes": [
+        {"id": "intro", "kind": "title", "duration": 2.35, "layout": "center", "transition": {"type": "lime-wipe", "duration": 0.4}, "text": {"kicker": "STAGE 2B · 120 BPM", "title": "음악이 장면 전환점을\n결정합니다", "body": "원래 컷 포인트를 가까운 Beat로 안전하게 이동합니다."}},
+        {"id": "beat-a", "kind": "media", "asset": "scene-a", "duration": 2.70, "layout": "full", "transition": {"type": "black-wipe", "duration": 0.4}, "text": {"label": "01", "eyebrow": "ANALYZE", "title": "Beat / Onset 분석", "body": "외부 WAV·MP3를 PCM으로 분석해 BPM과 후보 타임을 만듭니다."}},
+        {"id": "beat-b", "kind": "media", "asset": "scene-b", "duration": 3.15, "layout": "full", "transition": {"type": "center-split", "duration": 0.4}, "text": {"label": "02", "eyebrow": "SNAP", "title": "Scene Boundary Snap", "body": "최대 이동 허용 범위 안에서만 컷을 Beat에 맞춥니다."}},
+        {"id": "beat-c", "kind": "media", "asset": "scene-a", "duration": 2.55, "layout": "full", "transition": {"type": "lime-wipe", "duration": 0.4}, "text": {"label": "03", "eyebrow": "PRESERVE", "title": "전체 길이는 유지", "body": "중간 컷만 움직이고 마지막 영상 길이는 바꾸지 않습니다."}},
+        {"id": "end", "kind": "end", "duration": 3.25, "layout": "center", "transition": "cut", "text": {"kicker": "MUSIC-DRIVEN TIMING", "title": "2.35 → 2.50초\n5.05 → 5.00초", "body": "분석 결과는 timing-report.json에 기록됩니다."}}
+      ]
+    }
+  ]
+}
