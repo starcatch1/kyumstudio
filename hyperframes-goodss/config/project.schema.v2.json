@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kyumstudio.local/hyperframes-goodss/project.schema.v2.json",
+  "title": "hyperframes-goodss Stage 2A Project",
+  "type": "object",
+  "required": ["schemaVersion", "id", "assets", "compositions"],
+  "properties": {
+    "schemaVersion": {"const": 2},
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "title": {"type": "string"},
+    "quality": {"enum": ["draft", "standard", "high"]},
+    "presets": {
+      "type": "object",
+      "properties": {
+        "visual": {"type": "string"},
+        "caption": {"type": "string"},
+        "audio": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "audio": {
+      "type": "object",
+      "properties": {
+        "mode": {"enum": ["synthetic", "silent"]},
+        "preset": {"type": "string"},
+        "bgmVolume": {"type": "number", "minimum": 0, "maximum": 1},
+        "sfxVolume": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": true
+    },
+    "preprocessors": {"type": "array", "items": {"type": "object"}},
+    "assets": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["type", "src"],
+        "properties": {
+          "type": {"enum": ["image", "video"]},
+          "src": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": true
+      }
+    },
+    "compositions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "width", "height", "scenes"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "title": {"type": "string"},
+          "width": {"type": "integer", "minimum": 1},
+          "height": {"type": "integer", "minimum": 1},
+          "fps": {"const": 30},
+          "duration": {"oneOf": [{"const": "auto"}, {"type": "number", "exclusiveMinimum": 0}]},
+          "scenes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "duration"],
+              "properties": {
+                "id": {"type": "string", "minLength": 1},
+                "kind": {"enum": ["title", "media", "text", "end"]},
+                "start": {"type": "number", "minimum": 0},
+                "duration": {"type": "number", "exclusiveMinimum": 0},
+                "track": {"type": "integer", "minimum": 0},
+                "mediaTrack": {"type": "integer", "minimum": 0},
+                "asset": {"type": "string"},
+                "mediaStart": {"type": "number", "minimum": 0},
+                "layout": {"enum": ["center", "split", "full"]},
+                "motion": {"type": "string"},
+                "transition": {
+                  "oneOf": [
+                    {"enum": ["cut", "lime-wipe", "black-wipe", "center-split"]},
+                    {
+                      "type": "object",
+                      "required": ["type"],
+                      "properties": {
+                        "type": {"enum": ["cut", "lime-wipe", "black-wipe", "center-split"]},
+                        "duration": {"type": "number", "minimum": 0}
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "text": {
+                  "type": "object",
+                  "properties": {
+                    "kicker": {"type": "string"},
+                    "label": {"type": "string"},
+                    "eyebrow": {"type": "string"},
+                    "title": {"type": "string"},
+                    "body": {"type": "string"},
+                    "badge": {"type": "string"},
+                    "tags": {"type": "array", "items": {"type": "string"}}
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}
