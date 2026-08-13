@@ -48,7 +48,7 @@ for(const comp of project.compositions){
     filters.push(`[0:a]atrim=0:${duration},asetpts=PTS-STARTPTS,volume=${project.audio.bgm.volume}[bgm]`);let mix='bgm';
     if(narration){
       const delay=Math.round(n.start*1000);
-      filters.push(`[1:a]asetpts=PTS-STARTPTS,volume=${n.volume},adelay=${delay}|${delay}[nar0]`);
+      filters.push(`[1:a]asetpts=PTS-STARTPTS,volume=${n.volume},adelay=${delay}|${delay},apad,atrim=0:${duration}[nar0]`);
       if(d.enabled){
         filters.push('[nar0]asplit=2[nar_sc][nar_mix]');
         filters.push(`[bgm][nar_sc]sidechaincompress=threshold=${d.threshold}:ratio=${d.ratio}:attack=${d.attackMs}:release=${d.releaseMs}[duck]`);
