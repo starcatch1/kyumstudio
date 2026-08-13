@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 2,
+  "id": "motion-cards-sample",
+  "title": "Motion Cards — Non-character Stage 2A Sample",
+  "quality": "draft",
+  "presets": {
+    "visual": "social-dynamic",
+    "caption": "bold-kinetic",
+    "audio": "fashion-beat"
+  },
+  "audio": {
+    "mode": "synthetic",
+    "preset": "fashion-beat",
+    "bgmVolume": 0.14,
+    "sfxVolume": 0.24
+  },
+  "assets": {
+    "card-a": {"type": "image", "src": "assets/card-a.svg"},
+    "card-b": {"type": "image", "src": "assets/card-b.svg"}
+  },
+  "compositions": [
+    {
+      "id": "motion-cards-landscape",
+      "title": "Motion Cards Landscape",
+      "width": 1280,
+      "height": 720,
+      "fps": 30,
+      "duration": "auto",
+      "scenes": [
+        {
+          "id": "intro",
+          "kind": "title",
+          "duration": 2,
+          "layout": "center",
+          "transition": {"type": "lime-wipe", "duration": 0.4},
+          "text": {
+            "kicker": "NON-CHARACTER SAMPLE",
+            "title": "하나의 엔진으로\n다른 콘텐츠 만들기",
+            "badge": "STAGE 2A",
+            "body": "캐릭터 데이터 없이도 동일한 렌더 코어를 사용합니다."
+          }
+        },
+        {
+          "id": "card-a-scene",
+          "kind": "media",
+          "asset": "card-a",
+          "duration": 2.8,
+          "layout": "full",
+          "transition": {"type": "black-wipe", "duration": 0.4},
+          "text": {
+            "label": "01 / DATA",
+            "eyebrow": "CONTENT SEPARATION",
+            "title": "콘텐츠와 템플릿 분리",
+            "body": "텍스트와 자산을 JSON에서 바꾸고 렌더 코드는 재사용합니다.",
+            "tags": ["JSON", "REUSE", "HYPERFRAMES"]
+          }
+        },
+        {
+          "id": "card-b-scene",
+          "kind": "media",
+          "asset": "card-b",
+          "duration": 3.2,
+          "layout": "full",
+          "transition": {"type": "center-split", "duration": 0.4},
+          "text": {
+            "label": "02 / TIMING",
+            "eyebrow": "ARBITRARY SCENES",
+            "title": "장면 길이도 데이터로",
+            "body": "2.8초, 3.2초처럼 장면별 길이를 자유롭게 지정할 수 있습니다.",
+            "tags": ["DURATION", "TRANSITION"]
+          }
+        },
+        {
+          "id": "end",
+          "kind": "end",
+          "duration": 2,
+          "layout": "center",
+          "transition": "cut",
+          "text": {
+            "kicker": "SAME RENDER CORE",
+            "title": "캐릭터 전용에서\n범용 영상 엔진으로",
+            "body": "두 번째 샘플은 렌더러 코드 수정 없이 project.json만으로 구성됩니다."
+          }
+        }
+      ]
+    }
+  ]
+}
