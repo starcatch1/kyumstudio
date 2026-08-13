@@ -91,17 +91,53 @@ try {
   const totalFrames = Math.ceil(duration * captureFps);
   for (let frame = 0; frame < totalFrames; frame++) {
     const t = Math.min(duration - 0.0001, frame / captureFps);
-    await page.evaluate(({ id, t }) => {
+    await page.evaluate(async ({ id, t }) => {
       const tl = window.__timelines[id];
       tl.time(t, false).pause();
       const root = document.querySelector(`[data-composition-id="${id}"]`);
+      const mediaWaits = [];
+
+      const waitFor = (el, event, timeoutMs = 120) => new Promise(resolve => {
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          el.removeEventListener(event, finish);
+          resolve();
+        };
+        el.addEventListener(event, finish, { once: true });
+        setTimeout(finish, timeoutMs);
+      });
+
       for (const el of root.querySelectorAll('[data-start][data-duration][data-track-index]')) {
         if (el === root) continue;
         const start = Number(el.dataset.start);
         const dur = Number(el.dataset.duration);
         const active = Number.isFinite(start) && Number.isFinite(dur) && t >= start && t < start + dur;
         el.style.visibility = active ? 'visible' : 'hidden';
+
+        if (el.tagName === 'VIDEO' && active) {
+          mediaWaits.push((async () => {
+            if (el.readyState < 1) await waitFor(el, 'loadedmetadata', 180);
+            const mediaStart = Number(el.dataset.mediaStart || 0);
+            let desired = Math.max(0, mediaStart + (t - start));
+            if (Number.isFinite(el.duration) && el.duration > 0) desired = Math.min(desired, Math.max(0, el.duration - 0.001));
+            try {
+              if (Math.abs(el.currentTime - desired) > 0.012) {
+                const seek = waitFor(el, 'seeked', 180);
+                el.currentTime = desired;
+                el.pause();
+                await seek;
+              } else {
+                el.pause();
+              }
+            } catch {
+              el.pause();
+            }
+          })());
+        }
       }
+      if (mediaWaits.length) await Promise.all(mediaWaits);
     }, { id: compositionId, t });
     const name = `frame-${String(frame).padStart(6, '0')}.png`;
     await page.screenshot({ path: path.join(frameDir, name), type: 'png' });
